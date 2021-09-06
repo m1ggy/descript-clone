@@ -2,7 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
+
 import authRoutes from './routes/auth.js';
+import projectRoutes from './routes/project.js';
 dotenv.config();
 
 mongoose.connect(process.env.DB_URI, (error) => {
@@ -23,6 +25,8 @@ mongoose.connect(process.env.DB_URI, (error) => {
 
   //auth route
   app.use(authRoutes);
+  app.use('/project', projectRoutes);
+
   const port = process.env.PORT || 5000;
   app.listen(port, () => {
     console.log(`server listening on port ${port}`);

@@ -6,7 +6,7 @@ function ConfirmModal({ show, setShow, handler }) {
     handler();
   };
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title>Logout ...</Modal.Title>
       </Modal.Header>
@@ -15,7 +15,7 @@ function ConfirmModal({ show, setShow, handler }) {
         <Button variant='primary' onClick={handleClose}>
           Yes
         </Button>
-        <Button variant='danger' onClick={handleClose}>
+        <Button variant='danger' onClick={() => setShow(false)}>
           Cancel
         </Button>
       </Modal.Footer>

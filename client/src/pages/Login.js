@@ -12,6 +12,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const user = useStore((state) => state.username);
+
+  document.title = 'Login --Descript Clone';
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage({});
@@ -20,13 +22,14 @@ function Login() {
     try {
       const message = await login(creds);
       if (message) {
+        setLoading(false);
         return setMessage(message);
       }
       history.push('/projects');
     } catch {
+      setLoading(false);
       console.log('error occurred');
     }
-    setLoading(false);
   }
 
   useEffect(() => {
@@ -64,13 +67,12 @@ function Login() {
           </Form.Group>
 
           <Button type='submit' disabled={loading}>
-            Login
+            {loading ? 'Logging in ...' : 'Login'}
           </Button>
         </Card.Body>
         <Card.Footer>
           <p>
-            Need an account?{' '}
-            <Link to='/signup'> {loading ? 'Logging in ...' : 'Sign up.'}</Link>
+            Need an account? <Link to='/signup'> Signup.</Link>
           </p>
         </Card.Footer>
       </Card>

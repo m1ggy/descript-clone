@@ -6,7 +6,7 @@ export function generateToken(user) {
 
 export function authorize(req, res, next) {
   console.log('authorizing 🔃');
-  console.log(req.headers);
+
   if (req.headers['authorization'] == null) {
     return res.status(403).json({ message: 'Please provide authorization' });
   }

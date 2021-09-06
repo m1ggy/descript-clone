@@ -29,6 +29,9 @@ function Signup() {
   const history = useHistory();
   const { signup } = useAuth();
   const user = useStore((state) => state.username);
+
+  document.title = 'Create Account --Descript Clone';
+
   useEffect(() => {
     if (creds.password.length < 8 && creds.password !== '') {
       setValidation((val) => {
@@ -40,7 +43,7 @@ function Signup() {
           },
         };
       });
-    } else if (creds.password.length >= 8 && creds.confirmPass.length >= 8)
+    } else if (creds.password.length >= 8)
       setValidation((val) => {
         return {
           ...val,
@@ -80,6 +83,40 @@ function Signup() {
     }
   }, [user, history]);
 
+  useEffect(() => {
+    if (creds.username.trim().length === 0) {
+      setValidation((val) => {
+        return {
+          ...val,
+          username: {
+            valid: false,
+            message: 'Whitespaces is not valid!',
+          },
+        };
+      });
+    } else if (creds.username.length < 3 || creds.username.length > 20) {
+      setValidation((val) => {
+        return {
+          ...val,
+          username: {
+            valid: false,
+            message: 'username must be 3 characters to 20 characters long!',
+          },
+        };
+      });
+    } else {
+      setValidation((val) => {
+        return {
+          ...val,
+          username: {
+            valid: true,
+            message: 'username is valid!',
+          },
+        };
+      });
+    }
+  }, [creds.username]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -104,7 +141,16 @@ function Signup() {
               required
               onChange={(e) => setCreds({ ...creds, username: e.target.value })}
               value={creds.username}
+              isInvalid={
+                creds.username.length ? !validation.username.valid : null
+              }
+              isValid={creds.username.length ? validation.username.valid : null}
             />
+            <Form.Control.Feedback
+              type={validation.username.valid ? 'valid' : 'invalid'}
+            >
+              {validation.username.message}
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Password</Form.Label>
@@ -150,7 +196,8 @@ function Signup() {
             type='submit'
             disabled={
               validation.confirmPass.valid === false ||
-              validation.pass.valid === false
+              validation.pass.valid === false ||
+              validation.username.valid === false
                 ? true
                 : false
             }

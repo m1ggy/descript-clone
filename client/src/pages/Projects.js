@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useStore from '../store';
 import useAuth from '../hooks/useAuth';
-import { Dropdown, Button, Col, Row } from 'react-bootstrap';
+import { Dropdown, Col, Row } from 'react-bootstrap';
 import './projects.css';
 import ConfirmModal from '../components/ConfirmModal';
 function Projects() {
@@ -19,12 +19,21 @@ function Projects() {
         <Col>
           <Row className='project-header'>
             <Row className='header-user'>
-              <Col lg={1} className='username'>
+              <Col lg={2} className='username'>
                 <h5>Hello, {user} </h5>
               </Col>
-              <Button variant='outline-danger' onClick={() => setShow(true)}>
-                Logout
-              </Button>
+              <Col lg={2} className='centered'>
+                <Dropdown style={{ width: 'fit-content' }}>
+                  <Dropdown.Toggle variant='primary'>
+                    Account Settings
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={() => setShow(true)}>
+                      Logout
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Col>
             </Row>
             <Row>
               <Col>
@@ -32,9 +41,9 @@ function Projects() {
               </Col>
             </Row>
           </Row>
-          <Row className='project-nav' border>
+          <Row className='project-nav border'>
             <Row className='project-nav-buttons'>
-              <Dropdown>
+              <Dropdown className='create-project-dropdown'>
                 <Dropdown.Toggle variant='success'>
                   Create new Project
                 </Dropdown.Toggle>
@@ -46,29 +55,32 @@ function Projects() {
               </Dropdown>
             </Row>
             <Col className='project-nav-items'>
-              <table variant='primary' className='project-table'>
-                <thead>
-                  <tr>
-                    <th>Project Name</th>
-                    <th>Project Length</th>
-                    <th>Actions</th>
-                    <th>Open</th>
-                  </tr>
-                </thead>
-                {projects.length > 0 ? (
-                  projects.map((x) => {
-                    return (
-                      <Row>
-                        <p>{x.title}</p>
-                      </Row>
-                    );
-                  })
-                ) : (
-                  <Row className='centered'>
+              <Row className='w-100'>
+                <table variant='primary' className='project-table'>
+                  <thead>
+                    <tr>
+                      <th>Project Name</th>
+                      <th>Project Length</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  {projects.length > 0 &&
+                    projects.map((x) => {
+                      return (
+                        <Row>
+                          <p>{x.title}</p>
+                        </Row>
+                      );
+                    })}
+                </table>
+              </Row>
+              {projects.length === 0 && (
+                <Row className='centered' style={{ height: '400px' }}>
+                  <div className='centered-item'>
                     <p>No Projects</p>
-                  </Row>
-                )}
-              </table>
+                  </div>
+                </Row>
+              )}
             </Col>
           </Row>
         </Col>
