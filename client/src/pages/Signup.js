@@ -41,7 +41,7 @@ function Signup() {
           ...val,
           pass: {
             valid: false,
-            message: 'Password is too short.',
+            message: 'Password is too short!',
           },
         };
       });
