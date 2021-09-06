@@ -18,7 +18,13 @@ routes.post('/login', async (req, res) => {
 
     if (await bcrypt.compare(password, existingUser.password)) {
       const token = generateToken(username);
-      return res.status(200).json({ message: 'logged in.', token });
+      return res
+        .status(200)
+        .json({
+          message: 'logged in.',
+          token,
+          projects: existingUser.projects,
+        });
     }
 
     return res.status(400).json({ message: 'Wrong password' });

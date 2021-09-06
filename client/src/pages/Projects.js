@@ -4,8 +4,10 @@ import useAuth from '../hooks/useAuth';
 import { Dropdown, Col, Row } from 'react-bootstrap';
 import './projects.css';
 import ConfirmModal from '../components/ConfirmModal';
+import CreateNewModal from '../components/CreateNewModal';
 function Projects() {
   const [show, setShow] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
   const { signout } = useAuth();
@@ -15,6 +17,7 @@ function Projects() {
     <>
       <Row className='wrapper'>
         <ConfirmModal show={show} setShow={setShow} handler={signout} />
+        <CreateNewModal show={showCreate} setShow={setShowCreate} />
         <Col lg={2}></Col>
         <Col>
           <Row className='project-header'>
@@ -50,13 +53,15 @@ function Projects() {
                 <Dropdown.Menu>
                   <Dropdown.Item>Video Recording</Dropdown.Item>
                   <Dropdown.Item>Audio Recording</Dropdown.Item>
-                  <Dropdown.Item>Empty Project</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setShowCreate(true)}>
+                    Empty Project
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </Row>
             <Col className='project-nav-items'>
               <Row className='w-100'>
-                <table variant='primary' className='project-table'>
+                <table className='project-table'>
                   <thead>
                     <tr>
                       <th>Project Name</th>
@@ -64,14 +69,18 @@ function Projects() {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  {projects.length > 0 &&
-                    projects.map((x) => {
-                      return (
-                        <Row>
-                          <p>{x.title}</p>
-                        </Row>
-                      );
-                    })}
+                  <tbody>
+                    {projects.length > 0 &&
+                      projects.map((x) => {
+                        return (
+                          <tr key={x.name}>
+                            <td>{x.name}</td>
+                            <td>--</td>
+                            <td>Open | Delete</td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
                 </table>
               </Row>
               {projects.length === 0 && (

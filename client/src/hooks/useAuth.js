@@ -14,9 +14,9 @@ function useAuth() {
         password: password,
       });
       if (res.status === 200) {
-        const { token } = res.data;
+        const { token, projects } = res.data;
 
-        setUser({ username, projects: [], globalTime: '' });
+        setUser({ username, projects, globalTime: '' });
         localStorage.setItem('accessToken', token);
         history.push('/projects');
       }
@@ -55,10 +55,26 @@ function useAuth() {
     history.push('/');
   }
 
+  async function checkProjectAvailability(projectName) {
+    const token = localStorage.getItem('accessToken');
+    try {
+      const { data } = await axios.post(
+        `${baseurl}/project/check`,
+        { projectName },
+        { headers: { authorization: `Bearer ${token}` } }
+      );
+
+      return { content: data.message, type: 'success' };
+    } catch ({ response }) {
+      return { content: response.data.message, type: 'danger' };
+    }
+  }
+
   return {
     login,
     signup,
     signout,
+    checkProjectAvailability,
   };
 }
 

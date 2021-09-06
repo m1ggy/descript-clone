@@ -21,7 +21,7 @@ const projectBucket = gc.bucket('project-files-dc');
 const storage = multer();
 
 //routes
-router.post('/', authorize, async (req, res) => {
+router.post('/', async (req, res) => {
   const {
     user: { user },
   } = req;
@@ -80,10 +80,32 @@ router.post('/', authorize, async (req, res) => {
   } else {
     res.status(400).json({ message: 'Project already exist.' });
   }
+  ///delete temp file
   fs.unlink(path, (err) => {
     if (err) throw err;
     console.log('deleted temp file');
   });
+});
+
+////check if the project already exists
+router.post('/check', async (req, res) => {
+  const { projectName } = req.body;
+  const {
+    user: { user },
+  } = req;
+  const destination = `${user}/${projectName}/${projectName}.txt`;
+
+  const exists = await projectBucket
+    .file(destination)
+    .exists()
+    .catch(console.error);
+
+  if (exists[0] === true)
+    return res
+      .status(400)
+      .json({ message: `You already have a project named ${projectName}` });
+
+  return res.status(200).json({ message: 'Project name is available' });
 });
 
 export default router;
