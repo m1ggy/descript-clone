@@ -1,6 +1,38 @@
-.wrapper {
+.project-header {
+  padding: 25px;
+  border-bottom: 2px solid #a5b6ce;
+  margin: 10px;
+}
+.project-header button {
+  width: fit-content;
+}
+.header-user {
+  display: inline-flex;
+  justify-items: end;
+  justify-content: flex-end;
+}
+.username {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+}
+.project-nav-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  height: max-content;
+  width: 100%;
+}
+.project-table {
+  min-width: fit-content;
+  width: 500px;
+  border: 1px solid black;
+}
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
 }

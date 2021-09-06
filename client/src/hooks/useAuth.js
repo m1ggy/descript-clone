@@ -4,7 +4,7 @@ import useStore from '../store.js';
 import { useHistory } from 'react-router-dom';
 function useAuth() {
   const setUser = useStore((state) => state.setUser);
-
+  const clearUser = useStore((state) => state.clearUser);
   const history = useHistory();
 
   async function login({ username, password }) {
@@ -30,7 +30,6 @@ function useAuth() {
 
   async function signup(creds) {
     const { username, password } = creds;
-    console.log(username, password);
     try {
       const res = await axios.post(`${baseurl}/signup`, {
         username,
@@ -45,13 +44,21 @@ function useAuth() {
       }
     } catch (e) {
       const { message } = e.response.data;
+      console.log(e.response.data);
       return { content: message, type: 'danger' };
     }
+  }
+
+  function signout() {
+    localStorage.clear();
+    clearUser();
+    history.push('/');
   }
 
   return {
     login,
     signup,
+    signout,
   };
 }
 

@@ -30,11 +30,7 @@ function Signup() {
   const { signup } = useAuth();
   const user = useStore((state) => state.username);
   useEffect(() => {
-    if (
-      creds.password.length < 8 &&
-      creds.password !== '' &&
-      creds.confirmPass.length < 8
-    ) {
+    if (creds.password.length < 8 && creds.password !== '') {
       setValidation((val) => {
         return {
           ...val,
@@ -44,21 +40,7 @@ function Signup() {
           },
         };
       });
-    } else if (creds.password !== creds.confirmPass) {
-      setValidation((val) => {
-        return {
-          ...val,
-          confirmPass: {
-            valid: false,
-            message: 'Passwords do not match!',
-          },
-        };
-      });
-    } else {
-      setMessage('');
-    }
-
-    if (creds.password.length >= 8)
+    } else if (creds.password.length >= 8 && creds.confirmPass.length >= 8)
       setValidation((val) => {
         return {
           ...val,
@@ -69,7 +51,17 @@ function Signup() {
         };
       });
 
-    if (creds.password === creds.confirmPass) {
+    if (creds.password !== creds.confirmPass) {
+      setValidation((val) => {
+        return {
+          ...val,
+          confirmPass: {
+            valid: false,
+            message: 'Passwords do not match!',
+          },
+        };
+      });
+    } else {
       setValidation((val) => {
         return {
           ...val,
@@ -154,7 +146,15 @@ function Signup() {
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Button type='submit' disabled={loading}>
+          <Button
+            type='submit'
+            disabled={
+              validation.confirmPass.valid === false ||
+              validation.pass.valid === false
+                ? true
+                : false
+            }
+          >
             {loading ? 'Creating account ...' : 'Create Account'}
           </Button>
         </Card.Body>
