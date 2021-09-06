@@ -8,8 +8,7 @@ const useStore = create(
       ...createUserSlice(set, get),
     }),
     {
-      name: 'user',
-      getStorage: localStorage,
+      name: 'userInfo',
     }
   )
 );

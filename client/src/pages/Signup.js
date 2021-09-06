@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './login.css';
 import { Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
-function handleSubmit(e) {
-  e.preventDefault();
-}
-
+import useAuth from '../hooks/useAuth';
+import useStore from '../store';
 function Signup() {
   const [creds, setCreds] = useState({
     username: '',
@@ -26,10 +24,11 @@ function Signup() {
       message: '',
     },
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState({ content: '', type: '' });
   const [loading, setLoading] = useState(false);
   const history = useHistory();
-
+  const { signup } = useAuth();
+  const user = useStore((state) => state.username);
   useEffect(() => {
     if (
       creds.password.length < 8 &&
@@ -83,6 +82,21 @@ function Signup() {
     }
   }, [creds.password, creds.confirmPass]);
 
+  useEffect(() => {
+    if (user !== '') {
+      history.push('/projects');
+    }
+  }, [user, history]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    const msg = await signup(creds);
+    setLoading(false);
+    if (msg) {
+      setMessage(msg);
+    }
+  }
   return (
     <div className='wrap'>
       <h1>Descript Clone</h1>
@@ -140,7 +154,9 @@ function Signup() {
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Button>Create Account</Button>
+          <Button type='submit' disabled={loading}>
+            {loading ? 'Creating account ...' : 'Create Account'}
+          </Button>
         </Card.Body>
         <Card.Footer>
           <p>
@@ -148,6 +164,9 @@ function Signup() {
           </p>
         </Card.Footer>
       </Card>
+      {message.content && (
+        <Alert variant={message.type}>{message.content}</Alert>
+      )}
     </div>
   );
 }
