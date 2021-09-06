@@ -39,7 +39,7 @@ routes.post('/signup', async (req, res) => {
     const existingUser = await user.findOne({ username }).exec();
     if (existingUser)
       return res
-        .status(201)
+        .status(404)
         .json({ message: 'username is taken.', valid: false });
   } catch (e) {
     return res.status(400).json({ message: `An error occurred: ${e}` });

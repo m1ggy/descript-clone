@@ -165,7 +165,9 @@ function Signup() {
         </Card.Footer>
       </Card>
       {message.content && (
-        <Alert variant={message.type}>{message.content}</Alert>
+        <Alert variant={message.type} style={{ margin: '20px' }}>
+          {message.content}
+        </Alert>
       )}
     </div>
   );
