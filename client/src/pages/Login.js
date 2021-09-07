@@ -28,7 +28,7 @@ function Login() {
       history.push('/projects');
     } catch {
       setLoading(false);
-      console.log('error occurred');
+      setMessage({ content: 'An Error Occurred', type: 'danger' });
     }
   }
 
