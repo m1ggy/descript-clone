@@ -31,12 +31,11 @@ function Login() {
       setMessage({ content: 'An Error Occurred', type: 'danger' });
     }
   }
-
   useEffect(() => {
     if (user !== '') {
       history.push('/projects');
     }
-  }, [user, history]);
+  });
 
   return (
     <div className='wrap'>

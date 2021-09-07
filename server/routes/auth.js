@@ -18,13 +18,11 @@ routes.post('/login', async (req, res) => {
 
     if (await bcrypt.compare(password, existingUser.password)) {
       const token = generateToken(username);
-      return res
-        .status(200)
-        .json({
-          message: 'logged in.',
-          token,
-          projects: existingUser.projects,
-        });
+      return res.status(200).json({
+        message: 'logged in.',
+        token,
+        projects: existingUser.projects,
+      });
     }
 
     return res.status(400).json({ message: 'Wrong password' });
@@ -61,6 +59,23 @@ routes.post('/signup', async (req, res) => {
   const token = generateToken(username);
 
   return res.status(200).json({ message: 'Account created', token });
+});
+
+routes.get('/', authorize, async (req, res) => {
+  const username = req.user.user;
+
+  try {
+    const currentUser = await user.findOne({ username });
+    if (currentUser)
+      return res
+        .status(200)
+        .json({ message: 'Fetched user', projects: currentUser.projects });
+
+    return res.status(404).json({ message: 'failed to fetch user' });
+  } catch (e) {
+    console.log(e);
+    return res.status(404).json({ message: 'failed to fetch user', e });
+  }
 });
 
 export default routes;

@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import useStore from '../store';
 import useAuth from '../hooks/useAuth';
-import { Dropdown, Col, Row } from 'react-bootstrap';
+import { Dropdown, Col, Row, Button } from 'react-bootstrap';
 import './projects.css';
 import ConfirmModal from '../components/ConfirmModal';
 import CreateNewModal from '../components/CreateNewModal';
+import useProject from '../hooks/useProject';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 function Projects() {
   const [show, setShow] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [selectedProject, setSelectedProject] = useState('');
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
   const { signout } = useAuth();
+  const { deleteProject, getProjects } = useProject();
 
   document.title = `${user}'s Projects --Descript Clone`;
   return (
@@ -18,6 +23,13 @@ function Projects() {
       <Row className='wrapper'>
         <ConfirmModal show={show} setShow={setShow} handler={signout} />
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
+        <ConfirmDeleteModal
+          show={showDelete}
+          setShow={setShowDelete}
+          project={selectedProject}
+          handler={deleteProject}
+          get={getProjects}
+        />
         <Col lg={2}></Col>
         <Col>
           <Row className='project-header'>
@@ -73,10 +85,20 @@ function Projects() {
                     {projects.length > 0 &&
                       projects.map((x) => {
                         return (
-                          <tr key={x.name}>
-                            <td>{x.name}</td>
+                          <tr key={x.projectName}>
+                            <td>{x.projectName}</td>
                             <td>--</td>
-                            <td>Open | Delete</td>
+                            <td>
+                              <Button>Open</Button>
+                              <Button
+                                onClick={() => {
+                                  setSelectedProject(x.projectName);
+                                  setShowDelete(true);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </td>
                           </tr>
                         );
                       })}

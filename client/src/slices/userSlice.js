@@ -1,10 +1,12 @@
 const userInitialState = {
   username: '',
-  projects: [],
   globalTime: '',
+  projects: [],
 };
 
 export const createUserSlice = (set, get) => ({
+  username: '',
+  globalTime: '',
   setUser: (userObject) => set(userObject),
   clearUser: () => set(userInitialState),
 });

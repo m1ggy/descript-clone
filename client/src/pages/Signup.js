@@ -81,7 +81,7 @@ function Signup() {
     if (user !== '') {
       history.push('/projects');
     }
-  }, [user, history]);
+  });
 
   useEffect(() => {
     if (creds.username.trim().length === 0) {

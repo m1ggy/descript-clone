@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const projectSchema = new mongoose.Schema(
   {
-    projectname: { type: String, required: true },
-    files: [{ type: String, createdAt: Date }],
+    projectName: { type: String, required: true },
+    files: {},
     owner: { type: String, required: true },
   },
   { timestamps: true }
