@@ -24,7 +24,8 @@ function CreateNewModal({ show, setShow }) {
         content: 'Project name should be 5 characters to 20 charaacters long!',
       });
     } else {
-      const filtered = projects.filter((x) => x.name === projectName);
+      const filtered = projects.filter((x) => x.projectName === projectName);
+
       if (filtered.length) {
         return setMessage({
           type: 'danger',
@@ -95,7 +96,9 @@ function CreateNewModal({ show, setShow }) {
             variant='primary'
             type='submit'
             style={{ margin: '25px' }}
-            disabled={message.type === 'success' ? false : true || loading}
+            disabled={
+              loading ? true : message.type === 'success' ? false : true
+            }
           >
             {loading ? 'Loading ...' : 'Create Project'}
           </Button>

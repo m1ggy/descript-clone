@@ -95,7 +95,7 @@ router.post('/', async (req, res) => {
   }
   ///delete temp file
   fs.unlink(path, (err) => {
-    if (err) throw err;
+    if (err) return console.log(err);
     console.log('deleted temp file');
   });
 });
