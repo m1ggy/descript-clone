@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import useStore from '../store';
 import useAuth from '../hooks/useAuth';
-import { Dropdown, Col, Row, Button } from 'react-bootstrap';
+import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
 import './projects.css';
 import ConfirmModal from '../components/ConfirmModal';
 import CreateNewModal from '../components/CreateNewModal';
 import useProject from '../hooks/useProject';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import { formatDateLocale } from '../helpers/date';
 function Projects() {
   const [show, setShow] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -56,7 +57,7 @@ function Projects() {
               </Col>
             </Row>
           </Row>
-          <Row className='project-nav border'>
+          <Row className='project-nav'>
             <Row className='project-nav-buttons'>
               <Dropdown className='create-project-dropdown'>
                 <Dropdown.Toggle variant='success'>
@@ -73,11 +74,11 @@ function Projects() {
             </Row>
             <Col className='project-nav-items'>
               <Row className='w-100'>
-                <table className='project-table'>
+                <Table hover>
                   <thead>
                     <tr>
                       <th>Project Name</th>
-                      <th>Project Length</th>
+                      <th>Created At</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -87,7 +88,15 @@ function Projects() {
                         return (
                           <tr key={x.projectName}>
                             <td>{x.projectName}</td>
-                            <td>--</td>
+                            <td>
+                              {formatDateLocale(x.createdAt, 'en-US', {
+                                day: 'numeric',
+                                year: 'numeric',
+                                month: 'long',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </td>
                             <td>
                               <Button>Open</Button>
                               <Button
@@ -95,6 +104,7 @@ function Projects() {
                                   setSelectedProject(x.projectName);
                                   setShowDelete(true);
                                 }}
+                                style={{ marginLeft: '5px' }}
                               >
                                 Delete
                               </Button>
@@ -103,7 +113,7 @@ function Projects() {
                         );
                       })}
                   </tbody>
-                </table>
+                </Table>
               </Row>
               {projects.length === 0 && (
                 <Row className='centered' style={{ height: '400px' }}>

@@ -100,7 +100,7 @@ function Signup() {
           ...val,
           username: {
             valid: false,
-            message: 'username must be 3 characters to 20 characters long!',
+            message: 'must be 3 to 20 characters long!',
           },
         };
       });
@@ -129,7 +129,14 @@ function Signup() {
   return (
     <div className='wrap'>
       <h1>Descript Clone</h1>
-      <Card as='form' onSubmit={handleSubmit} className='form-container'>
+      <Card
+        as='form'
+        onSubmit={handleSubmit}
+        className='form-container'
+        style={{
+          width: 'fit-content',
+        }}
+      >
         <Card.Body>
           <Card.Title style={{ padding: '10px', fontWeight: 'bold' }}>
             Sign up
@@ -146,8 +153,11 @@ function Signup() {
               }
               isValid={creds.username.length ? validation.username.valid : null}
             />
+
             <Form.Control.Feedback
               type={validation.username.valid ? 'valid' : 'invalid'}
+              as={'div'}
+              style={{ height: '25px' }}
             >
               {validation.username.message}
             </Form.Control.Feedback>

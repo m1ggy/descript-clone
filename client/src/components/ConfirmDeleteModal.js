@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 function ConfirmDeleteModal({ show, setShow, handler, project, get }) {
   const [loading, setLoading] = useState(false);
+
   const handleClose = async () => {
     setLoading(true);
 
@@ -11,7 +12,7 @@ function ConfirmDeleteModal({ show, setShow, handler, project, get }) {
     setLoading(false);
   };
   return (
-    <Modal show={show} onHide={handleClose} centered>
+    <Modal show={show} onHide={() => setShow(false)} centered>
       <Modal.Header closeButton={!loading}>
         <Modal.Title>Delete Project</Modal.Title>
       </Modal.Header>

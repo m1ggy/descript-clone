@@ -69,7 +69,7 @@ function Login() {
             {loading ? 'Logging in ...' : 'Login'}
           </Button>
         </Card.Body>
-        <Card.Footer>
+        <Card.Footer style={{ textAlign: 'center' }}>
           <p>
             Need an account? <Link to='/signup'> Signup.</Link>
           </p>

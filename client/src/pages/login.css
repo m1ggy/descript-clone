@@ -7,11 +7,7 @@
   flex-direction: column;
 }
 .form-container {
-  width: 22rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  width: fit-content;
 }
 .form-container button {
   width: 12rem;
