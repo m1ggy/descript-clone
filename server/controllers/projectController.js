@@ -124,7 +124,7 @@ export const deleteProject = async (req, res) => {
   const destination = `${user}/${projectName}/`;
   try {
     //delete file from storage, project collection and user collection
-    let [files] = await projectBucket.getFiles(destination);
+    let [files] = await projectBucket.getFiles();
 
     files = files.filter((x) => x.name.includes(`${destination}`));
 

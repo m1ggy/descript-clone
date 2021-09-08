@@ -13,15 +13,17 @@ function CreateNewModal({ show, setShow }) {
   const { createProject, getProjects } = useProject();
 
   useEffect(() => {
-    if (projectName.trim() === '') {
+    if (projectName === '') {
+      return;
+    } else if (projectName.includes(' ')) {
       return setMessage({
         type: 'danger',
-        content: 'Cannot use whitespace as project name !',
+        content: 'Cannot use whitespace in project name!',
       });
     } else if (projectName.length < 5 || projectName.length > 20) {
       return setMessage({
         type: 'danger',
-        content: 'Project name should be 5 characters to 20 charaacters long!',
+        content: 'Project name should be 5 characters to 20 characters long!',
       });
     } else {
       const filtered = projects.filter((x) => x.projectName === projectName);
