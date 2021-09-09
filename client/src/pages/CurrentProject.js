@@ -6,11 +6,47 @@ import './currentProject.css';
 import { DropZone } from '../components/DropZone';
 import useStore from '../store';
 import axios from 'axios';
+import WaveSurfer from 'wavesurfer.js';
+import MediaInfoModal from '../components/MediaInfoModal';
 function CurrentProject() {
   const history = useHistory();
   const [loading, setLoading] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState({});
+  const [showMedia, setShowMedia] = useState(false);
   const [transcription, setTranscription] = useState('');
   const currentProject = useStore((state) => state.currentProject);
+  const setCurrentProject = useStore((state) => state.setCurrentProject);
+  const [waveSurfer, setWaveSurfer] = useState(null);
+  const [files, setFiles] = useState([]);
+
+  useEffect(() => {
+    setWaveSurfer(
+      WaveSurfer.create({
+        container: '#waveform',
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    if (currentProject) {
+      if (currentProject.files) setFiles(currentProject.files.media);
+    }
+  }, [currentProject]);
+
+  useEffect(() => {
+    console.log(files);
+  }, [files]);
+
+  useEffect(() => {
+    if (waveSurfer) {
+      // waveSurfer.load(
+      //   'https://storage.googleapis.com/project-files-dc/test/test1/[BTCLOD.COM]%20Chill%20Type%20Beat%20_Missing%20You_%20_%20Mellow%20Chill%20Type%20Beat%202020-320k.mp3'
+      // );
+      waveSurfer.on('ready', () => {
+        console.log('audio ready');
+      });
+    }
+  }, [waveSurfer]);
 
   useEffect(() => {
     async function getFiles() {
@@ -27,10 +63,16 @@ function CurrentProject() {
     }
     getFiles();
   }, [currentProject]);
+
   return (
     <Row>
       <Col lg={2} xs={0}></Col>
       <Col>
+        <MediaInfoModal
+          selectedMedia={selectedMedia}
+          show={showMedia}
+          setShow={setShowMedia}
+        />
         <Row className='project-header'>
           <UserHeader />
           <h1>{currentProject.projectName}</h1>
@@ -39,6 +81,7 @@ function CurrentProject() {
           <Button
             onClick={() => {
               history.goBack();
+              setCurrentProject({});
             }}
             style={{
               width: 'fit-content',
@@ -64,14 +107,28 @@ function CurrentProject() {
                     >
                       <h6>Media Files</h6>
                     </ListGroup.Item>
-                    {currentProject !== {} &&
-                      currentProject.files.media.map((x) => {
-                        return (
-                          <ListGroup.Item action key={x.url}>
-                            {x.name}
-                          </ListGroup.Item>
-                        );
-                      })}
+                    {files.map((x) => {
+                      return (
+                        <ListGroup.Item
+                          action
+                          key={x.url}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                          onClick={() => {
+                            setSelectedMedia(x);
+                            setShowMedia(true);
+                          }}
+                        >
+                          {x.name.length > 15
+                            ? x.name.slice(0, 15) +
+                              '...' +
+                              x.name.split('.')[x.name.split('.').length - 1]
+                            : x.name}{' '}
+                        </ListGroup.Item>
+                      );
+                    })}
                   </ListGroup>
                 </Row>
               </Row>
@@ -102,9 +159,33 @@ function CurrentProject() {
                   id={currentProject._id}
                 />
               </Row>
+              <Row>
+                <Button
+                  onClick={() => {
+                    if (waveSurfer)
+                      waveSurfer.backend.ac.resume().then(() => {
+                        waveSurfer.play();
+                      });
+                  }}
+                >
+                  Play
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (waveSurfer)
+                      waveSurfer.backend.ac.resume().then(() => {
+                        waveSurfer.pause();
+                      });
+                  }}
+                >
+                  Stop
+                </Button>
+              </Row>
             </Col>
           </Row>
         )}
+        <div id='waveform'></div>
+        <div id='waveform-timeline'></div>
       </Col>
       <Col lg={2} xs={0}></Col>
     </Row>

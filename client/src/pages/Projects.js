@@ -83,8 +83,8 @@ function Projects() {
                             <td>
                               <Button
                                 variant='success'
-                                onClick={() => {
-                                  fetchProject(x.id);
+                                onClick={async () => {
+                                  await fetchProject(x.id);
                                   history.push(`/projects/${x.id}`);
                                 }}
                               >

@@ -3,8 +3,10 @@ import { Modal, Button } from 'react-bootstrap';
 import useStore from '../store';
 function ConfirmModal({ show, setShow, handler }) {
   const setLoading = useStore((state) => state.setLoading);
+  const setCurrentProject = useStore((state) => state.setCurrentProject);
   const handleClose = () => {
     setShow(!show);
+    setCurrentProject({});
     setLoading(false);
     handler();
   };

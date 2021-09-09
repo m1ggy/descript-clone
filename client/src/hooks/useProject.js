@@ -68,6 +68,7 @@ function useProject() {
       setCurrentProject(res.data.project);
       return res.data.message;
     } catch (e) {
+      console.log(e.response);
       return e.response;
     }
   }
