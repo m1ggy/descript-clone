@@ -191,18 +191,19 @@ export const deleteProject = async (req, res) => {
     return res.status(500).json({ message: 'Failed to delete project.', e });
   }
 };
-
+////fetch project
 export const getProject = async (req, res) => {
   const { id } = req.params;
 
   try {
     const project = await projectModel.findById(id).exec();
-
+    console.log(project);
     if (!project)
       return res.status(404).json({ message: 'Project does not exist' });
 
     return res.status(200).json({ message: 'project fetched', project });
   } catch (e) {
+    console.log(e);
     return res.status(404).json({ message: 'Failed to fetch project', e });
   }
 };
@@ -236,7 +237,7 @@ export const updateProject = [
               name: req.file.originalname,
               url: newMedia.publicUrl(),
               type: req.file.mimetype,
-              createAt: new Date(),
+              createdAt: new Date(),
             },
           },
         })
