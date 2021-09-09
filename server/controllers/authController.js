@@ -20,6 +20,7 @@ export const login = async (req, res) => {
         message: 'logged in.',
         token,
         projects: existingUser.projects,
+        uid: existingUser._id,
       });
     }
 

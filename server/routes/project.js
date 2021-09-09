@@ -3,6 +3,8 @@ import {
   createProject,
   checkProject,
   deleteProject,
+  getProject,
+  updateProject,
 } from '../controllers/projectController.js';
 ///router
 const router = express.Router();
@@ -16,5 +18,7 @@ router.post('/', createProject);
 router.post('/check', checkProject);
 
 router.delete('/', deleteProject);
+router.get('/:id', getProject);
+router.post('/:id', ...updateProject);
 
 export default router;

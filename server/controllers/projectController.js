@@ -2,7 +2,6 @@ import path from 'path';
 import { Storage } from '@google-cloud/storage';
 import multer from 'multer';
 import fs from 'fs';
-
 import projectModel from '../models/project.js';
 import userModel from '../models/user.js';
 
@@ -15,8 +14,26 @@ const gc = new Storage({
 });
 const projectBucket = gc.bucket('project-files-dc');
 
+////storage cors and public access config
+async function configureBucket() {
+  await projectBucket.setCorsConfiguration([
+    {
+      origin: ['http://localhost:3000'],
+      responseHeader: [
+        'X-Requested-With',
+        'Access-Control-Allow-Origin',
+        'Content-Type',
+      ],
+      method: ['GET', 'HEAD', 'DELETE', 'OPTIONS'],
+      maxAgeSeconds: 3600,
+    },
+  ]);
+  await projectBucket.makePublic();
+}
+configureBucket().catch(console.error);
+
 ///multer
-const storage = multer();
+const upload = multer({ dest: `${__dirname}/temp` });
 
 export const createProject = async (req, res) => {
   const {
@@ -27,9 +44,15 @@ export const createProject = async (req, res) => {
   if (projectName == null)
     return res.send(404).json({ message: 'project name is not provided.' });
 
-  ///create local text file
+  //common path
   const path = `${__dirname}/temp/${projectName}.txt`;
 
+  ///create local directory
+  fs.promises.mkdir(`${__dirname}/temp/`, { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+
+  ///create local text file
   fs.writeFile(path, '', (err) => {
     if (err) return res.status(400).json({ message: 'An error occurred', err });
     console.log('created text file');
@@ -48,7 +71,9 @@ export const createProject = async (req, res) => {
 
   const newFile = projectBucket.file(destination);
 
-  const exists = await newFile.exists().catch(console.error);
+  const exists = await newFile.exists().catch((e) => {
+    if (e) throw e;
+  });
 
   if (exists[0] === false) {
     ///add project to user directory
@@ -66,15 +91,23 @@ export const createProject = async (req, res) => {
         projectName,
         files: {
           transcription: { link: newFile.publicUrl(), createdAt: new Date() },
+          media: [],
         },
         owner: user,
       });
       await newProject.save();
       ///add new project to user
+
+      const project = await projectModel.findOne({ projectName }).exec();
+
       await userModel
         .findOneAndUpdate(
           { username: user },
-          { $push: { projects: { projectName, createdAt: new Date() } } }
+          {
+            $push: {
+              projects: { projectName, createdAt: new Date(), id: project._id },
+            },
+          }
         )
         .exec();
       console.log('added project to DB');
@@ -158,3 +191,61 @@ export const deleteProject = async (req, res) => {
     return res.status(500).json({ message: 'Failed to delete project.', e });
   }
 };
+
+export const getProject = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const project = await projectModel.findById(id).exec();
+
+    if (!project)
+      return res.status(404).json({ message: 'Project does not exist' });
+
+    return res.status(200).json({ message: 'project fetched', project });
+  } catch (e) {
+    return res.status(404).json({ message: 'Failed to fetch project', e });
+  }
+};
+/// update project
+export const updateProject = [
+  upload.single('media'),
+  async (req, res) => {
+    const {
+      user: { user },
+    } = req;
+    const { id } = req.params;
+
+    const { projectName } = await projectModel.findById(id).exec();
+    console.log(req.file);
+
+    const destination = `${user}/${projectName}/${req.file.originalname}`;
+    const path = req.file.path;
+
+    try {
+      await projectBucket.upload(path, { destination });
+
+      ///delete temp file
+      await fs.promises.unlink(req.file.path);
+
+      const newMedia = projectBucket.file(destination);
+
+      await projectModel
+        .findByIdAndUpdate(id, {
+          $push: {
+            'files.media': {
+              name: req.file.originalname,
+              url: newMedia.publicUrl(),
+              type: req.file.mimetype,
+              createAt: new Date(),
+            },
+          },
+        })
+        .exec();
+
+      // /return
+      return res.status(200).json({ message: 'updated project' });
+    } catch (e) {
+      throw e;
+    }
+  },
+];
