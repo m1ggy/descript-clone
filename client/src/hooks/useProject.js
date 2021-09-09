@@ -4,6 +4,7 @@ import useStore from '../store';
 
 function useProject() {
   const setProject = useStore((state) => state.setProject);
+  const setCurrentProject = useStore((state) => state.setCurrentProject);
   async function createProject(projectName) {
     const token = localStorage.getItem('accessToken');
     try {
@@ -49,8 +50,22 @@ function useProject() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(res.data);
       setProject(res.data.projects);
+      return res.data.message;
+    } catch (e) {
+      return e.response;
+    }
+  }
+
+  async function fetchProject(id) {
+    const token = localStorage.getItem('accessToken');
+    try {
+      const res = await axios.get(`${baseurl}/project/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCurrentProject(res.data.project);
       return res.data.message;
     } catch (e) {
       return e.response;
@@ -61,6 +76,7 @@ function useProject() {
     createProject,
     deleteProject,
     getProjects,
+    fetchProject,
   };
 }
 

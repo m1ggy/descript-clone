@@ -1,28 +1,27 @@
 import React, { useState } from 'react';
 import useStore from '../store';
-import useAuth from '../hooks/useAuth';
 import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import './projects.css';
-import ConfirmModal from '../components/ConfirmModal';
 import CreateNewModal from '../components/CreateNewModal';
+import UserHeader from '../components/UserHeader';
 import useProject from '../hooks/useProject';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { formatDateLocale } from '../helpers/date';
+
 function Projects() {
-  const [show, setShow] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [selectedProject, setSelectedProject] = useState('');
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
-  const { signout } = useAuth();
-  const { deleteProject, getProjects } = useProject();
+  const history = useHistory();
+  const { deleteProject, getProjects, fetchProject } = useProject();
 
   document.title = `${user}'s Projects --Descript Clone`;
   return (
     <>
       <Row className='wrapper'>
-        <ConfirmModal show={show} setShow={setShow} handler={signout} />
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
         <ConfirmDeleteModal
           show={showDelete}
@@ -34,31 +33,15 @@ function Projects() {
         <Col lg={2}></Col>
         <Col>
           <Row className='project-header'>
-            <Row className='header-user'>
-              <Col lg={2} className='username'>
-                <h5>Hello, {user} </h5>
-              </Col>
-              <Col lg={2} className='centered'>
-                <Dropdown style={{ width: 'fit-content' }}>
-                  <Dropdown.Toggle variant='primary'>
-                    Account Settings
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => setShow(true)}>
-                      Logout
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Col>
-            </Row>
+            <UserHeader />
             <Row>
               <Col>
                 <h1>Projects</h1>
               </Col>
             </Row>
           </Row>
-          <Row className='project-nav'>
-            <Row className='project-nav-buttons'>
+          <Row>
+            <Row>
               <Dropdown className='create-project-dropdown'>
                 <Dropdown.Toggle variant='success'>
                   Create new Project
@@ -98,13 +81,22 @@ function Projects() {
                               })}
                             </td>
                             <td>
-                              <Button>Open</Button>
+                              <Button
+                                variant='success'
+                                onClick={() => {
+                                  fetchProject(x.id);
+                                  history.push(`/projects/${x.id}`);
+                                }}
+                              >
+                                Open
+                              </Button>
                               <Button
                                 onClick={() => {
                                   setSelectedProject(x.projectName);
                                   setShowDelete(true);
                                 }}
                                 style={{ marginLeft: '5px' }}
+                                variant='danger'
                               >
                                 Delete
                               </Button>

@@ -1,8 +1,11 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import useStore from '../store';
 function ConfirmModal({ show, setShow, handler }) {
+  const setLoading = useStore((state) => state.setLoading);
   const handleClose = () => {
     setShow(!show);
+    setLoading(false);
     handler();
   };
   return (

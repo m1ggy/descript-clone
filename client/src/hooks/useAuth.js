@@ -14,9 +14,9 @@ function useAuth() {
         password: password,
       });
       if (res.status === 200) {
-        const { token, projects } = res.data;
+        const { token, projects, uid } = res.data;
 
-        setUser({ username, projects, globalTime: '' });
+        setUser({ username, projects, globalTime: '', uid });
         localStorage.setItem('accessToken', token);
         history.push('/projects');
       }

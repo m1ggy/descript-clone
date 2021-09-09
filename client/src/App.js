@@ -4,6 +4,7 @@ import Signup from './pages/Signup';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import PrivateRoute from './routes/PrivateRoute';
 import Projects from './pages/Projects';
+import CurrentProject from './pages/CurrentProject';
 function App() {
   return (
     <>
@@ -14,6 +15,9 @@ function App() {
           </Route>
           <Route path='/' exact>
             <Login />
+          </Route>
+          <Route path='/projects/:id'>
+            <CurrentProject />
           </Route>
           <PrivateRoute component={Projects} path='/projects' />
 

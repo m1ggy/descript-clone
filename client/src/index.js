@@ -2,5 +2,5 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import 'bootswatch/dist/yeti/bootstrap.min.css';
+import 'bootswatch/dist/lux/bootstrap.min.css';
 ReactDOM.render(<App />, document.getElementById('root'));
