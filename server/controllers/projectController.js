@@ -25,7 +25,6 @@ async function configureBucket() {
         'Content-Type',
       ],
       method: ['GET', 'HEAD', 'DELETE', 'OPTIONS'],
-      maxAgeSeconds: 3600,
     },
   ]);
   await projectBucket.makePublic();
@@ -80,6 +79,9 @@ export const createProject = async (req, res) => {
     await projectBucket
       .upload(path, {
         destination,
+        metadata: {
+          cacheControl: 'private, max-age=0, no-transform',
+        },
       })
       .catch(console.error);
     console.log(`Uploaded file ${projectName}.txt`);
@@ -197,7 +199,7 @@ export const getProject = async (req, res) => {
 
   try {
     const project = await projectModel.findById(id).exec();
-    console.log(project);
+
     if (!project)
       return res.status(404).json({ message: 'Project does not exist' });
 
@@ -217,7 +219,6 @@ export const updateProject = [
     const { id } = req.params;
 
     const { projectName } = await projectModel.findById(id).exec();
-    console.log(req.file);
 
     const destination = `${user}/${projectName}/${req.file.originalname}`;
     const path = req.file.path;
@@ -281,5 +282,55 @@ export const deleteMediaProject = async (req, res) => {
     }
   } catch (e) {
     return res.status(404).json({ message: 'Failed to delete media', e });
+  }
+};
+
+export const updateTransciption = async (req, res) => {
+  const {
+    user: { user },
+    body: { transcription },
+    params: { id },
+  } = req;
+
+  console.log(user, transcription, id);
+  if (transcription == null || id == null)
+    return res.status(400).json({ message: 'Please provide necessary info' });
+
+  try {
+    const currentProject = await projectModel.findById(id).exec();
+
+    const path = `${user}/${currentProject.projectName}/${currentProject.projectName}.txt`;
+    const localPath = `${__dirname}/temp/${currentProject.projectName}.txt`;
+
+    const currentFile = projectBucket.file(path);
+
+    ///create local text file
+    await fs.promises.writeFile(localPath, transcription);
+
+    ///upload new file
+    await projectBucket.upload(localPath, {
+      destination: path,
+      metadata: {
+        cacheControl: 'private, max-age=0, no-transform',
+      },
+    });
+
+    console.log(await currentFile.exists());
+
+    ///update db
+    currentProject.files.transcription = {
+      ...currentProject.files.transcription,
+      link: currentFile.publicUrl(),
+      updatedAt: new Date(),
+    };
+
+    await currentProject.save();
+
+    ///delete local temp file
+    await fs.promises.unlink(localPath);
+
+    return res.status(200).json({ message: 'Updated transcription' });
+  } catch (e) {
+    return res.status(404).json({ message: 'Failed to update project', e });
   }
 };

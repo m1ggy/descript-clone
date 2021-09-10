@@ -6,6 +6,7 @@ import {
   getProject,
   updateProject,
   deleteMediaProject,
+  updateTransciption,
 } from '../controllers/projectController.js';
 ///router
 const router = express.Router();
@@ -29,5 +30,8 @@ router.post('/:id', ...updateProject);
 
 ///delete media files in project
 router.delete('/:id/media', deleteMediaProject);
+
+///update transcription
+router.patch('/:id/transcription', updateTransciption);
 
 export default router;

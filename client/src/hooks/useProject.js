@@ -5,6 +5,7 @@ import useStore from '../store';
 function useProject() {
   const setProject = useStore((state) => state.setProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
+
   async function createProject(projectName) {
     const token = localStorage.getItem('accessToken');
     try {
@@ -109,6 +110,25 @@ function useProject() {
     }
   }
 
+  async function saveTranscription(id, transcription) {
+    const token = localStorage.getItem('accessToken');
+    try {
+      await axios.patch(
+        `${baseurl}/project/${id}/transcription`,
+        { transcription },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchProject(id);
+      return;
+    } catch (e) {
+      console.log(e.response);
+    }
+  }
+
   return {
     createProject,
     deleteProject,
@@ -116,6 +136,7 @@ function useProject() {
     fetchProject,
     deleteMediaProject,
     uploadMediaProject,
+    saveTranscription,
   };
 }
 

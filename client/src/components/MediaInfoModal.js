@@ -49,6 +49,8 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
                     ? 'URL'
                     : x === 'createdAt'
                     ? 'Created on'
+                    : x === 'updatedAt'
+                    ? 'Updated on'
                     : x}
                   :{' '}
                   {x === 'url' || x === 'link' ? (
