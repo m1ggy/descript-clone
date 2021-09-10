@@ -73,11 +73,49 @@ function useProject() {
     }
   }
 
+  async function deleteMediaProject(id, filename) {
+    const token = localStorage.getItem('accessToken');
+    try {
+      const res = await axios.delete(`${baseurl}/project/${id}/media`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          filename,
+        },
+      });
+      fetchProject(id);
+      return res.data.message;
+    } catch (e) {
+      console.log(e.response);
+      return e.response;
+    }
+  }
+
+  async function uploadMediaProject(id, media) {
+    const token = localStorage.getItem('accessToken');
+    try {
+      await axios.post(`${baseurl}/project/${id}`, media, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchProject(id);
+      return;
+    } catch (e) {
+      console.log(e);
+      return;
+    }
+  }
+
   return {
     createProject,
     deleteProject,
     getProjects,
     fetchProject,
+    deleteMediaProject,
+    uploadMediaProject,
   };
 }
 

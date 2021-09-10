@@ -1,39 +1,86 @@
-import React from 'react';
-import { Modal, Button } from 'react-bootstrap';
-function MediaInfoModal({ selectedMedia, show, setShow }) {
+import React, { useState } from 'react';
+import { Modal, Button, Spinner } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import useProject from '../hooks/useProject';
+
+import { formatDateLocale } from '../helpers/date';
+
+function MediaInfoModal({ selectedMedia, show, setShow, id }) {
+  const [loading, setLoading] = useState(false);
+  const { deleteMediaProject } = useProject();
   const handleClose = () => setShow(false);
+  const handleDelete = async () => {
+    setLoading(true);
+    toast
+      .promise(deleteMediaProject(id, selectedMedia.name), {
+        pending: `Deleting media`,
+        error: 'Failed to delete media',
+        success: `Deleted ${selectedMedia.name}`,
+      })
+      .then(() => {
+        setLoading(false);
+        setShow(false);
+      });
+  };
+
   return (
     <Modal show={show} onHide={handleClose} centered size='lg'>
-      <Modal.Header closeButton>
-        <Modal.Title>{selectedMedia.name}</Modal.Title>
+      <Modal.Header closeButton={loading ? null : true}>
+        <Modal.Title>{selectedMedia.name || 'Transcription'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {Object.keys(selectedMedia).map((x) => {
-          return (
-            <>
-              <p>
-                {x} :
-                {x === 'url' ? (
-                  <a
-                    href={selectedMedia[`${x}`]}
-                    target='_blank'
-                    rel='noreferrer'
-                  >
-                    Link
-                  </a>
-                ) : (
-                  selectedMedia[`${x}`]
-                )}
-              </p>
-            </>
-          );
-        })}
+        {loading ? (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <Spinner animation='border' size='lg' />
+          </div>
+        ) : (
+          Object.keys(selectedMedia).map((x) => {
+            return (
+              <>
+                <p>
+                  {x === 'link' || x === 'url'
+                    ? 'URL'
+                    : x === 'createdAt'
+                    ? 'Created on'
+                    : x}
+                  :{' '}
+                  {x === 'url' || x === 'link' ? (
+                    <a
+                      href={selectedMedia[`${x}`]}
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      Link
+                    </a>
+                  ) : x === 'createdAt' ? (
+                    formatDateLocale(selectedMedia[`${x}`])
+                  ) : (
+                    selectedMedia[`${x}`]
+                  )}
+                </p>
+              </>
+            );
+          })
+        )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant='primary' onClick={handleClose}>
-          Delete
-        </Button>
-        <Button variant='danger' onClick={() => setShow(false)}>
+        {selectedMedia.type == null ? null : (
+          <Button variant='primary' onClick={handleDelete} disabled={loading}>
+            Delete
+          </Button>
+        )}
+        <Button
+          variant='danger'
+          onClick={() => setShow(false)}
+          disabled={loading}
+        >
           Close
         </Button>
       </Modal.Footer>

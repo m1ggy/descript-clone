@@ -1,35 +1,31 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
-import { baseurl } from '../constants';
 import useStore from '../store';
 import { Spinner } from 'react-bootstrap';
 import useProject from '../hooks/useProject';
+import { toast } from 'react-toastify';
 export function DropZone({ id, ...props }) {
   const setLoading = useStore((state) => state.setLoading);
   const loading = useStore((state) => state.loading);
-  const { fetchProject } = useProject();
+  const { uploadMediaProject } = useProject();
   const onDrop = useCallback(
     async (acceptedFiles) => {
       setLoading(true);
       console.log(acceptedFiles);
       const media = new FormData();
-      const token = localStorage.getItem('accessToken');
+
       media.append('media', acceptedFiles[0]);
-      try {
-        await axios.post(`${baseurl}/project/${id}`, media, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
+      toast
+        .promise(uploadMediaProject(id, media), {
+          pending: 'Uploading File ...',
+          success: 'File upload successful.',
+          rejection: 'Failed to upload file.',
+        })
+        .then(() => {
+          setLoading(false);
         });
-        fetchProject(id);
-      } catch (e) {
-        console.log(e);
-      }
-      setLoading(false);
     },
-    [id, setLoading, fetchProject]
+    [id, setLoading, uploadMediaProject]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

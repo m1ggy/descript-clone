@@ -246,7 +246,40 @@ export const updateProject = [
       // /return
       return res.status(200).json({ message: 'updated project' });
     } catch (e) {
-      throw e;
+      return res.status(404).json({ message: 'Failed to update project', e });
     }
   },
 ];
+
+export const deleteMediaProject = async (req, res) => {
+  const {
+    user: { user },
+    body: { filename },
+    params: { id },
+  } = req;
+
+  try {
+    await projectModel
+      .findByIdAndUpdate(id, {
+        $pull: { 'files.media': { name: filename } },
+      })
+      .exec();
+
+    const currentProject = await projectModel.findById(id).exec();
+
+    const path = `${user}/${currentProject.projectName}/${filename}`;
+
+    const fileToDelete = projectBucket.file(path);
+
+    if (await fileToDelete.exists()) {
+      await fileToDelete.delete();
+      return res.status(200).json({ message: 'Deleted media' });
+    } else {
+      return res
+        .status(404)
+        .json({ message: 'Failed to delete media: file does not exist' });
+    }
+  } catch (e) {
+    return res.status(404).json({ message: 'Failed to delete media', e });
+  }
+};

@@ -8,6 +8,8 @@ import useStore from '../store';
 import axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
 import MediaInfoModal from '../components/MediaInfoModal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 function CurrentProject() {
   const history = useHistory();
   const [loading, setLoading] = useState(false);
@@ -42,8 +44,21 @@ function CurrentProject() {
       // waveSurfer.load(
       //   'https://storage.googleapis.com/project-files-dc/test/test1/[BTCLOD.COM]%20Chill%20Type%20Beat%20_Missing%20You_%20_%20Mellow%20Chill%20Type%20Beat%202020-320k.mp3'
       // );
+
       waveSurfer.on('ready', () => {
         console.log('audio ready');
+        toast.success('Player ready', {
+          theme: 'success',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          bodyStyle: {
+            color: 'black',
+          },
+        });
       });
     }
   }, [waveSurfer]);
@@ -68,10 +83,22 @@ function CurrentProject() {
     <Row>
       <Col lg={2} xs={0}></Col>
       <Col>
+        <ToastContainer
+          position='bottom-center'
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
         <MediaInfoModal
           selectedMedia={selectedMedia}
           show={showMedia}
           setShow={setShowMedia}
+          id={currentProject._id}
         />
         <Row className='project-header'>
           <UserHeader />
@@ -105,7 +132,30 @@ function CurrentProject() {
                       variant='info'
                       style={{ textAlign: 'center' }}
                     >
-                      <h6>Media Files</h6>
+                      <h6>Main Transcription</h6>
+                    </ListGroup.Item>
+                    <ListGroup.Item
+                      action
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                      onClick={() => {
+                        setSelectedMedia(currentProject.files.transcription);
+                        setShowMedia(true);
+                      }}
+                    >
+                      Transcription
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Row>
+                <Row>
+                  <ListGroup>
+                    <ListGroup.Item
+                      variant='info'
+                      style={{ textAlign: 'center' }}
+                    >
+                      <h6>Media File</h6>
                     </ListGroup.Item>
                     {files.map((x) => {
                       return (
@@ -147,40 +197,23 @@ function CurrentProject() {
                 />
               </Row>
               <Row className='mt-5'>
-                <h3>Media</h3>
-                <DropZone
-                  style={{
-                    width: '100%',
+                {files && !files.length && (
+                  <>
+                    <h3>Media</h3>
+                    <DropZone
+                      style={{
+                        width: '100%',
 
-                    textAlign: 'center',
-                    height: '100%',
-                  }}
-                  className='border'
-                  id={currentProject._id}
-                />
+                        textAlign: 'center',
+                        height: '100%',
+                      }}
+                      className='border'
+                      id={currentProject._id}
+                    />
+                  </>
+                )}
               </Row>
-              <Row>
-                <Button
-                  onClick={() => {
-                    if (waveSurfer)
-                      waveSurfer.backend.ac.resume().then(() => {
-                        waveSurfer.play();
-                      });
-                  }}
-                >
-                  Play
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (waveSurfer)
-                      waveSurfer.backend.ac.resume().then(() => {
-                        waveSurfer.pause();
-                      });
-                  }}
-                >
-                  Stop
-                </Button>
-              </Row>
+              <Row></Row>
             </Col>
           </Row>
         )}

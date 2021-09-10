@@ -71,15 +71,7 @@ function Projects() {
                         return (
                           <tr key={x.projectName}>
                             <td>{x.projectName}</td>
-                            <td>
-                              {formatDateLocale(x.createdAt, 'en-US', {
-                                day: 'numeric',
-                                year: 'numeric',
-                                month: 'long',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })}
-                            </td>
+                            <td>{formatDateLocale(x.createdAt)}</td>
                             <td>
                               <Button
                                 variant='success'
