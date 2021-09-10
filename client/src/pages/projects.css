@@ -1,6 +1,6 @@
 .project-header {
   padding: 25px;
-  border-bottom: 2px solid #a5b6ce;
+  border-bottom: 2px solid black;
   margin: 10px;
 }
 .project-header button {
@@ -24,8 +24,8 @@
   flex-direction: column;
   height: max-content;
   width: 100%;
-  border-top: 2px solid #a5b6ce;
-  border-bottom: 2px solid #a5b6ce;
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
 }
 .project-table {
   min-width: fit-content;

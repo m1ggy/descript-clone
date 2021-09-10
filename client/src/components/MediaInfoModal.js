@@ -43,7 +43,7 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
         ) : (
           Object.keys(selectedMedia).map((x) => {
             return (
-              <>
+              <div key={x}>
                 <p>
                   {x === 'link' || x === 'url'
                     ? 'URL'
@@ -67,7 +67,7 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
                     selectedMedia[`${x}`]
                   )}
                 </p>
-              </>
+              </div>
             );
           })
         )}

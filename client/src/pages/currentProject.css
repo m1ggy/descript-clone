@@ -1,11 +1,11 @@
 .project-header {
   padding: 25px;
-  border-bottom: 2px solid #a5b6ce;
+  border-bottom: 2px solid black;
   margin: 10px;
 }
 
 .project-content {
-  border-top: 2px solid #a5b6ce;
+  border-top: 2px solid black;
   margin: 10px;
   padding: 25px;
 }

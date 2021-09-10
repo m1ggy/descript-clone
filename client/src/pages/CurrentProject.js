@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Col, Row, Button, Form, ListGroup, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
-import { FaSave, FaUndo, FaArrowLeft } from 'react-icons/fa';
+import { FaSave, FaUndo, FaArrowLeft, FaFileExport } from 'react-icons/fa';
 import { useHistory } from 'react-router-dom';
 
 import { DropZone } from '../components/DropZone';
@@ -141,7 +141,7 @@ function CurrentProject() {
           <UserHeader />
           <h1>{currentProject.projectName}</h1>
         </Row>
-        <Row>
+        <Row style={{ borderBottom: '2px solid black', marginBottom: '10px' }}>
           <Button
             onClick={() => {
               history.goBack();
@@ -157,7 +157,7 @@ function CurrentProject() {
           </Button>
         </Row>
         {!loading && (
-          <Row className='project-content'>
+          <Row>
             <Col lg={3} md={'auto'} sm={12}>
               <Row className='m-2'>
                 <Row style={{ textAlign: 'center', fontWeight: 'bolder' }}>
@@ -219,6 +219,11 @@ function CurrentProject() {
                       })}
                   </ListGroup>
                 </Row>
+                <Row
+                  style={{
+                    margin: '20px',
+                  }}
+                ></Row>
               </Row>
             </Col>
             <Col>
@@ -241,7 +246,9 @@ function CurrentProject() {
                   }
                 }}
               >
-                <h3>Transcription</h3>
+                <div style={{ textAlign: 'center' }}>
+                  <h3>Transcription</h3>
+                </div>
                 <div
                   style={{
                     display: 'flex',
@@ -254,11 +261,25 @@ function CurrentProject() {
                     {' '}
                     {oldTS !== transcription && 'unsaved changes.'}
                   </pre>
-                  <div>
+                  <div
+                    style={{
+                      borderBottom: '1px solid black',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 'max-content',
+                      padding: '10px',
+                      margin: '5px',
+                      width: '100%',
+                    }}
+                  >
                     <OverlayToolTip
                       content={
                         <div style={{ margin: '5px' }}>
-                          <p>Save Shortcut Key</p>
+                          <p>Save changes to server.</p>
+                          <small>Save Shortcut Key</small>
+                          <br />
+                          <br />
                           <kbd>Ctrl</kbd> + <kbd>S</kbd>
                         </div>
                       }
@@ -267,7 +288,7 @@ function CurrentProject() {
                       <Button
                         size='sm'
                         variant='success'
-                        style={{ width: 'fit-content', marginBottom: '15px' }}
+                        style={{ width: 'fit-content' }}
                         onClick={saveChanges}
                         disabled={oldTS === transcription || saving}
                       >
@@ -284,7 +305,10 @@ function CurrentProject() {
                     <OverlayToolTip
                       content={
                         <div style={{ margin: '5px' }}>
-                          <p>Undo Shortcut Key</p>
+                          <p>Undo changes.</p>
+                          <small>Undo Shortcut Key</small>
+                          <br />
+                          <br />
                           <kbd>Ctrl</kbd> + <kbd>Z</kbd>
                         </div>
                       }
@@ -295,13 +319,36 @@ function CurrentProject() {
                         variant='warning'
                         style={{
                           width: 'fit-content',
-                          marginBottom: '15px',
+
                           marginLeft: '10px ',
                         }}
                         onClick={undoChanges}
                         disabled={oldTS === transcription || saving}
                       >
                         Undo <FaUndo size='2em' style={{ marginLeft: '3px' }} />
+                      </Button>
+                    </OverlayToolTip>
+                    <OverlayToolTip
+                      content={
+                        <div style={{ margin: '5px' }}>
+                          <p>Export current project to the web.</p>
+                        </div>
+                      }
+                      placement='top'
+                    >
+                      <Button
+                        style={{
+                          width: 'fit-content',
+                          marginLeft: '10px',
+                        }}
+                        size='sm'
+                        variant='info'
+                      >
+                        Export...{' '}
+                        <FaFileExport
+                          size='2em'
+                          style={{ marginLeft: '3px' }}
+                        />
                       </Button>
                     </OverlayToolTip>
                   </div>
