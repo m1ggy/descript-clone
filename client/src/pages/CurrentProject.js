@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Button, Form, ListGroup, Spinner } from 'react-bootstrap';
-import UserHeader from '../components/UserHeader';
-import { useHistory } from 'react-router-dom';
-import './currentProject.css';
-import { DropZone } from '../components/DropZone';
-import useStore from '../store';
 import axios from 'axios';
-// import WaveSurfer from 'wavesurfer.js';
-import MediaInfoModal from '../components/MediaInfoModal';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
+import { FaSave, FaUndo, FaArrowLeft } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
+
+import { DropZone } from '../components/DropZone';
+import UserHeader from '../components/UserHeader';
 import useProject from '../hooks/useProject';
+import MediaInfoModal from '../components/MediaInfoModal';
+import OverlayToolTip from '../components/OverlayToolTip';
+import useStore from '../store';
+
+// import WaveSurfer from 'wavesurfer.js';
+
+import './currentProject.css';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 function CurrentProject() {
   const history = useHistory();
@@ -92,6 +97,25 @@ function CurrentProject() {
     }
   }, [currentProject.files]);
 
+  const saveChanges = () => {
+    setSaving(true);
+    toast
+      .promise(saveTranscription(currentProject._id, transcription), {
+        pending: 'Saving changes ....',
+        success: 'Changes saved.',
+        rejection: 'Failed to save changes.',
+      })
+      .then(() => {
+        setSaving(false);
+      });
+  };
+  const undoChanges = () => {
+    setTranscription(oldTS);
+    toast.warn('Undo', {
+      autoClose: 1500,
+    });
+  };
+
   return (
     <Row>
       <Col lg={2} xs={0}></Col>
@@ -129,7 +153,7 @@ function CurrentProject() {
               marginBottom: '25px',
             }}
           >
-            Go back
+            Go back <FaArrowLeft size='1.5em' style={{ marginLeft: '3px' }} />
           </Button>
         </Row>
         {!loading && (
@@ -139,7 +163,7 @@ function CurrentProject() {
                 <Row style={{ textAlign: 'center', fontWeight: 'bolder' }}>
                   <h3>Project Files</h3>
                 </Row>
-                <Row>
+                <Row className='mb-5'>
                   <ListGroup>
                     <ListGroup.Item
                       variant='info'
@@ -198,7 +222,25 @@ function CurrentProject() {
               </Row>
             </Col>
             <Col>
-              <Row>
+              <Row
+                onKeyDown={(e) => {
+                  if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                  }
+
+                  if (e.ctrlKey && e.key === 's' && oldTS !== transcription) {
+                    e.preventDefault();
+                    saveChanges();
+                  } else if (
+                    e.ctrlKey &&
+                    e.key === 'z' &&
+                    oldTS !== transcription
+                  ) {
+                    e.preventDefault();
+                    undoChanges();
+                  }
+                }}
+              >
                 <h3>Transcription</h3>
                 <div
                   style={{
@@ -210,57 +252,58 @@ function CurrentProject() {
                 >
                   <pre className='text-warning'>
                     {' '}
-                    {oldTS !== transcription && 'Changes made.'}
+                    {oldTS !== transcription && 'unsaved changes.'}
                   </pre>
                   <div>
-                    <Button
-                      size='sm'
-                      variant='outline-success'
-                      style={{ width: 'fit-content', marginBottom: '15px' }}
-                      onClick={() => {
-                        setSaving(true);
-                        toast
-                          .promise(
-                            saveTranscription(
-                              currentProject._id,
-                              transcription
-                            ),
-                            {
-                              pending: 'Saving changes ....',
-                              success: 'Changes saved.',
-                              rejection: 'Failed to save changes.',
-                            }
-                          )
-                          .then(() => {
-                            setSaving(false);
-                          });
-                      }}
-                      disabled={oldTS === transcription || saving}
+                    <OverlayToolTip
+                      content={
+                        <div style={{ margin: '5px' }}>
+                          <p>Save Shortcut Key</p>
+                          <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                        </div>
+                      }
+                      placement='top'
                     >
-                      {saving ? (
-                        <Spinner animation='border' size='sm' />
-                      ) : (
-                        'Save'
-                      )}
-                    </Button>
-                    <Button
-                      size='sm'
-                      variant='outline-warning'
-                      style={{
-                        width: 'fit-content',
-                        marginBottom: '15px',
-                        marginLeft: '10px ',
-                      }}
-                      onClick={() => {
-                        setTranscription(oldTS);
-                        toast.warn('Undo', {
-                          autoClose: 1500,
-                        });
-                      }}
-                      disabled={oldTS === transcription || saving}
+                      <Button
+                        size='sm'
+                        variant='success'
+                        style={{ width: 'fit-content', marginBottom: '15px' }}
+                        onClick={saveChanges}
+                        disabled={oldTS === transcription || saving}
+                      >
+                        {saving ? (
+                          <Spinner animation='border' size='sm' />
+                        ) : (
+                          <>
+                            Save{' '}
+                            <FaSave size='2em' style={{ marginLeft: '3px' }} />
+                          </>
+                        )}
+                      </Button>
+                    </OverlayToolTip>
+                    <OverlayToolTip
+                      content={
+                        <div style={{ margin: '5px' }}>
+                          <p>Undo Shortcut Key</p>
+                          <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                        </div>
+                      }
+                      placement='top'
                     >
-                      Undo
-                    </Button>
+                      <Button
+                        size='sm'
+                        variant='warning'
+                        style={{
+                          width: 'fit-content',
+                          marginBottom: '15px',
+                          marginLeft: '10px ',
+                        }}
+                        onClick={undoChanges}
+                        disabled={oldTS === transcription || saving}
+                      >
+                        Undo <FaUndo size='2em' style={{ marginLeft: '3px' }} />
+                      </Button>
+                    </OverlayToolTip>
                   </div>
                 </div>
                 <Form.Control
@@ -294,7 +337,6 @@ function CurrentProject() {
           </Row>
         )}
         <div id='waveform'></div>
-        <div id='waveform-timeline'></div>
       </Col>
       <Col lg={2} xs={0}></Col>
     </Row>
