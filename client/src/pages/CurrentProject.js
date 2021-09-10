@@ -6,7 +6,7 @@ import './currentProject.css';
 import { DropZone } from '../components/DropZone';
 import useStore from '../store';
 import axios from 'axios';
-import WaveSurfer from 'wavesurfer.js';
+// import WaveSurfer from 'wavesurfer.js';
 import MediaInfoModal from '../components/MediaInfoModal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -22,7 +22,7 @@ function CurrentProject() {
   const [oldTS, setOldTS] = useState('');
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
-  const [waveSurfer, setWaveSurfer] = useState(null);
+  // const [waveSurfer, setWaveSurfer] = useState(null);
   const [files, setFiles] = useState([]);
   const { saveTranscription } = useProject();
 
