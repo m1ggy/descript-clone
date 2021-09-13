@@ -8,10 +8,12 @@ import UserHeader from '../components/UserHeader';
 import useProject from '../hooks/useProject';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { formatDateLocale } from '../helpers/date';
+import RecordVideoModal from '../components/RecordVideoModal';
 
 function Projects() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showVideoCreate, setShowVideoCreate] = useState(false);
   const [selectedProject, setSelectedProject] = useState('');
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
@@ -23,6 +25,7 @@ function Projects() {
     <>
       <Row className='wrapper'>
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
+        <RecordVideoModal show={showVideoCreate} setShow={setShowVideoCreate} />
         <ConfirmDeleteModal
           show={showDelete}
           setShow={setShowDelete}
@@ -47,7 +50,9 @@ function Projects() {
                   Create new Project
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item>Video Recording</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setShowVideoCreate(true)}>
+                    Video Recording
+                  </Dropdown.Item>
                   <Dropdown.Item>Audio Recording</Dropdown.Item>
                   <Dropdown.Item onClick={() => setShowCreate(true)}>
                     Empty Project

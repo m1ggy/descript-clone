@@ -50,7 +50,8 @@ export function DropZone({ id, ...props }) {
           height: '100%',
         }}
       >
-        <Spinner size='lg' variant='primary' animation='border' />
+        Uploading ....
+        <Spinner size='sm' variant='primary' animation='border' />
       </div>
     );
   }

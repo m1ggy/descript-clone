@@ -292,7 +292,6 @@ export const updateTransciption = async (req, res) => {
     params: { id },
   } = req;
 
-  console.log(user, transcription, id);
   if (transcription == null || id == null)
     return res.status(400).json({ message: 'Please provide necessary info' });
 
@@ -314,8 +313,6 @@ export const updateTransciption = async (req, res) => {
         cacheControl: 'private, max-age=0, no-transform',
       },
     });
-
-    console.log(await currentFile.exists());
 
     ///update db
     currentProject.files.transcription = {

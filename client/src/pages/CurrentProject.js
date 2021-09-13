@@ -72,8 +72,8 @@ function CurrentProject() {
 
   useEffect(() => {
     function getFiles() {
-      setLoading(true);
       if (currentProject.files) {
+        setLoading(true);
         try {
           axios
             .get(currentProject.files.transcription.link, {
@@ -81,20 +81,20 @@ function CurrentProject() {
             })
             .then(({ data }) => {
               data.text().then((text) => {
-                setTranscription(text);
-                setOldTS(text);
+                if (text !== transcription) {
+                  setTranscription(text);
+                  setOldTS(text);
+                }
+                setLoading(false);
               });
             });
         } catch (e) {
           console.log(e.response);
         }
       }
-      setLoading(false);
     }
-
-    if (currentProject.files) {
-      getFiles();
-    }
+    getFiles();
+    //eslint-disable-next-line
   }, [currentProject.files]);
 
   const saveChanges = () => {
@@ -146,6 +146,8 @@ function CurrentProject() {
             onClick={() => {
               history.goBack();
               setCurrentProject({});
+              setTranscription('');
+              setOldTS('');
             }}
             style={{
               width: 'fit-content',
@@ -156,139 +158,146 @@ function CurrentProject() {
             Go back <FaArrowLeft size='1.5em' style={{ marginLeft: '3px' }} />
           </Button>
         </Row>
-        {!loading && (
-          <Row>
-            <Col lg={3} md={'auto'} sm={12}>
-              <Row className='m-2'>
-                <Row style={{ textAlign: 'center', fontWeight: 'bolder' }}>
-                  <h3>Project Files</h3>
-                </Row>
-                <Row className='mb-5'>
-                  <ListGroup>
-                    <ListGroup.Item
-                      variant='info'
-                      style={{ textAlign: 'center' }}
-                    >
-                      <h6>Main Transcription</h6>
-                    </ListGroup.Item>
-                    <ListGroup.Item
-                      action
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                      }}
-                      onClick={() => {
-                        setSelectedMedia(currentProject.files.transcription);
-                        setShowMedia(true);
-                      }}
-                    >
-                      Transcription File
-                    </ListGroup.Item>
-                  </ListGroup>
-                </Row>
-                <Row>
-                  <ListGroup>
-                    <ListGroup.Item
-                      variant='info'
-                      style={{ textAlign: 'center' }}
-                    >
-                      <h6>Media File</h6>
-                    </ListGroup.Item>
-                    {files &&
-                      files.map((x) => {
-                        return (
-                          <ListGroup.Item
-                            action
-                            key={x.url}
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                            }}
-                            onClick={() => {
-                              setSelectedMedia(x);
-                              setShowMedia(true);
-                            }}
-                          >
-                            {x.name.length > 15
-                              ? x.name.slice(0, 15) +
-                                '...' +
-                                x.name.split('.')[x.name.split('.').length - 1]
-                              : x.name}{' '}
-                          </ListGroup.Item>
-                        );
-                      })}
-                  </ListGroup>
-                </Row>
-                <Row
-                  style={{
-                    margin: '20px',
-                  }}
-                ></Row>
-              </Row>
-            </Col>
-            <Col>
-              <Row
-                onKeyDown={(e) => {
-                  if (e.ctrlKey && e.key === 's') {
-                    e.preventDefault();
-                  }
 
-                  if (e.ctrlKey && e.key === 's' && oldTS !== transcription) {
-                    e.preventDefault();
-                    saveChanges();
-                  } else if (
-                    e.ctrlKey &&
-                    e.key === 'z' &&
-                    oldTS !== transcription
-                  ) {
-                    e.preventDefault();
-                    undoChanges();
-                  }
-                }}
-              >
-                <div style={{ textAlign: 'center' }}>
-                  <h3>Transcription</h3>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    width: 'fit-content',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <pre className='text-warning'>
-                    {' '}
-                    {oldTS !== transcription && 'unsaved changes.'}
-                  </pre>
-                  <div
+        <Row>
+          <Col lg={3} md={'auto'} sm={12}>
+            <Row
+              style={{ display: 'flex', justifyContent: 'center' }}
+              className='m-2'
+            >
+              <Row style={{ textAlign: 'center', fontWeight: 'bolder' }}>
+                <h3>Project Files</h3>
+              </Row>
+              <Row className='mb-5'>
+                <ListGroup>
+                  <ListGroup.Item
+                    variant='info'
+                    style={{ textAlign: 'center' }}
+                  >
+                    <h6>Main Transcription</h6>
+                  </ListGroup.Item>
+                  <ListGroup.Item
+                    action
                     style={{
-                      borderBottom: '1px solid black',
                       display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: 'max-content',
-                      padding: '10px',
-                      margin: '5px',
-                      width: '100%',
+                      justifyContent: 'space-between',
+                    }}
+                    onClick={() => {
+                      setSelectedMedia(currentProject.files.transcription);
+                      setShowMedia(true);
                     }}
                   >
-                    <OverlayToolTip
-                      content={
-                        <div style={{ margin: '5px' }}>
-                          <p>Save changes to server.</p>
-                          <small>Save Shortcut Key</small>
-                          <br />
-                          <br />
-                          <kbd>Ctrl</kbd> + <kbd>S</kbd>
-                        </div>
-                      }
-                      placement='top'
-                    >
+                    Transcription File
+                  </ListGroup.Item>
+                </ListGroup>
+              </Row>
+              <Row>
+                <ListGroup>
+                  <ListGroup.Item
+                    variant='info'
+                    style={{ textAlign: 'center' }}
+                  >
+                    <h6>Media File</h6>
+                  </ListGroup.Item>
+                  {files &&
+                    files.map((x) => {
+                      return (
+                        <ListGroup.Item
+                          action
+                          key={x.url}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                          onClick={() => {
+                            setSelectedMedia(x);
+                            setShowMedia(true);
+                          }}
+                        >
+                          {x.name.length > 15
+                            ? x.name.slice(0, 15) +
+                              '...' +
+                              x.name.split('.')[x.name.split('.').length - 1]
+                            : x.name}{' '}
+                        </ListGroup.Item>
+                      );
+                    })}
+                </ListGroup>
+              </Row>
+              <Row
+                style={{
+                  margin: '20px',
+                }}
+              ></Row>
+            </Row>
+          </Col>
+          <Col>
+            <Row
+              onKeyDown={(e) => {
+                if (e.ctrlKey && e.key === 's') {
+                  e.preventDefault();
+                }
+
+                if (e.ctrlKey && e.key === 's' && oldTS !== transcription) {
+                  e.preventDefault();
+                  saveChanges();
+                } else if (
+                  e.ctrlKey &&
+                  e.key === 'z' &&
+                  oldTS !== transcription
+                ) {
+                  e.preventDefault();
+                  undoChanges();
+                }
+              }}
+            >
+              <div style={{ textAlign: 'center' }}>
+                <h3>Transcription</h3>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  width: 'fit-content',
+                  flexDirection: 'column',
+                }}
+              >
+                <pre className='text-warning'>
+                  {' '}
+                  {oldTS !== transcription && 'unsaved changes.'}
+                </pre>
+                <div
+                  style={{
+                    borderBottom: '1px solid black',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: 'max-content',
+                    padding: '10px',
+                    margin: '5px',
+                    width: '100%',
+                  }}
+                >
+                  <OverlayToolTip
+                    content={
+                      <div style={{ margin: '5px' }}>
+                        <p>Save changes.</p>
+                        <small>Save Shortcut Key</small>
+                        <br />
+                        <br />
+                        <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                      </div>
+                    }
+                    placement='top'
+                  >
+                    <span>
                       <Button
                         size='sm'
                         variant='success'
-                        style={{ width: 'fit-content' }}
+                        style={{
+                          width: 'fit-content',
+                          pointerEvents: oldTS === transcription && 'none',
+                        }}
                         onClick={saveChanges}
                         disabled={oldTS === transcription || saving}
                       >
@@ -301,25 +310,27 @@ function CurrentProject() {
                           </>
                         )}
                       </Button>
-                    </OverlayToolTip>
-                    <OverlayToolTip
-                      content={
-                        <div style={{ margin: '5px' }}>
-                          <p>Undo changes.</p>
-                          <small>Undo Shortcut Key</small>
-                          <br />
-                          <br />
-                          <kbd>Ctrl</kbd> + <kbd>Z</kbd>
-                        </div>
-                      }
-                      placement='top'
-                    >
+                    </span>
+                  </OverlayToolTip>
+                  <OverlayToolTip
+                    content={
+                      <div style={{ margin: '5px' }}>
+                        <p>Undo changes.</p>
+                        <small>Undo Shortcut Key</small>
+                        <br />
+                        <br />
+                        <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                      </div>
+                    }
+                    placement='top'
+                  >
+                    <span>
                       <Button
                         size='sm'
                         variant='warning'
                         style={{
                           width: 'fit-content',
-
+                          pointerEvents: oldTS === transcription && 'none',
                           marginLeft: '10px ',
                         }}
                         onClick={undoChanges}
@@ -327,15 +338,17 @@ function CurrentProject() {
                       >
                         Undo <FaUndo size='2em' style={{ marginLeft: '3px' }} />
                       </Button>
-                    </OverlayToolTip>
-                    <OverlayToolTip
-                      content={
-                        <div style={{ margin: '5px' }}>
-                          <p>Export current project to the web.</p>
-                        </div>
-                      }
-                      placement='top'
-                    >
+                    </span>
+                  </OverlayToolTip>
+                  <OverlayToolTip
+                    content={
+                      <div style={{ margin: '5px' }}>
+                        <p>Export current project to the web.</p>
+                      </div>
+                    }
+                    placement='top'
+                  >
+                    <span>
                       <Button
                         style={{
                           width: 'fit-content',
@@ -350,9 +363,11 @@ function CurrentProject() {
                           style={{ marginLeft: '3px' }}
                         />
                       </Button>
-                    </OverlayToolTip>
-                  </div>
+                    </span>
+                  </OverlayToolTip>
                 </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <Form.Control
                   value={transcription}
                   onChange={(e) => {
@@ -360,29 +375,31 @@ function CurrentProject() {
                   }}
                   style={{ minHeight: '150px' }}
                   as='textarea'
+                  disabled={loading}
                 />
-              </Row>
-              <Row className='mt-5'>
-                {files && !files.length && (
-                  <>
-                    <h3>Media</h3>
-                    <DropZone
-                      style={{
-                        width: '100%',
+              </div>
+            </Row>
+            <Row className='mt-5'>
+              {files && !files.length && (
+                <>
+                  <h3>Media</h3>
+                  <DropZone
+                    style={{
+                      width: '100%',
 
-                        textAlign: 'center',
-                        height: '100%',
-                      }}
-                      className='border'
-                      id={currentProject._id}
-                    />
-                  </>
-                )}
-              </Row>
-              <Row></Row>
-            </Col>
-          </Row>
-        )}
+                      textAlign: 'center',
+                      height: '100%',
+                    }}
+                    className='border'
+                    id={currentProject._id}
+                  />
+                </>
+              )}
+            </Row>
+            <Row></Row>
+          </Col>
+        </Row>
+
         <div id='waveform'></div>
       </Col>
       <Col lg={2} xs={0}></Col>
