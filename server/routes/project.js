@@ -7,6 +7,7 @@ import {
   updateProject,
   deleteMediaProject,
   updateTransciption,
+  CreateProjectWithMedia,
 } from '../controllers/projectController.js';
 ///router
 const router = express.Router();
@@ -33,5 +34,8 @@ router.delete('/:id/media', deleteMediaProject);
 
 ///update transcription
 router.patch('/:id/transcription', updateTransciption);
+
+///create Project with Media
+router.post('/new/media', ...CreateProjectWithMedia);
 
 export default router;

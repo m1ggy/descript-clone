@@ -71,7 +71,10 @@ export const createProject = async (req, res) => {
   const newFile = projectBucket.file(destination);
 
   const exists = await newFile.exists().catch((e) => {
-    if (e) throw e;
+    if (e)
+      return res
+        .status(400)
+        .json({ message: 'File already exists on the storage' });
   });
 
   if (exists[0] === false) {
@@ -331,3 +334,27 @@ export const updateTransciption = async (req, res) => {
     return res.status(404).json({ message: 'Failed to update project', e });
   }
 };
+
+export const CreateProjectWithMedia = [
+  upload.single('media'),
+  async (req, res) => {
+    const {
+      user: { user },
+    } = req;
+
+    if (projectName == null)
+      return res.send(404).json({ message: 'project name is not provided.' });
+
+    //common path
+    const path = `${__dirname}/temp/${projectName}.txt`;
+
+    ///create local text file
+    fs.writeFile(path, '', (err) => {
+      if (err)
+        return res.status(400).json({ message: 'An error occurred', err });
+      console.log('created text file');
+    });
+
+    return res.status(200).json({ message: 'CreateProjectWithMedia Route' });
+  },
+];

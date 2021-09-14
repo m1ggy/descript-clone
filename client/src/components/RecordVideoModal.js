@@ -19,12 +19,18 @@ function RecordVideoModal({ show, setShow }) {
   const [serverMessage, setServerMessage] = useState({ type: '', content: '' });
   const [loading, setLoading] = useState(false);
 
-  const { createProject, getProjects, uploadMediaProject } = useProject();
+  const { createProjectWithMedia } = useProject();
   const projects = useStore((state) => state.projects);
-  const unsub = useStore.subscribe(console.log, (state) => state.project);
 
   const preview = useRef();
-  const { startRecording, stopRecording, url, recordingActive } = useRecorder(
+  const {
+    startRecording,
+    stopRecording,
+    url,
+    recordingActive,
+    currentBlob,
+    resetRecorder,
+  } = useRecorder(
     { audio: true, video: true },
     { audio: 'audio/webm', video: 'video/webm; codec=vp9' },
     true,
@@ -34,29 +40,31 @@ function RecordVideoModal({ show, setShow }) {
 
   ///local fucntions
   const handleClose = () => {
-    setShow(!show);
+    resetRecorder();
+    setRecording(false);
+    setRecordingFinished(false);
+    setProjectName('');
+    setShowCountdown(false);
+    setProceed(false);
+    setShow(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      setServerMessage({
-        content: await createProject(projectName),
-        type: 'success',
-      });
+      console.log(currentBlob);
+      const media = new FormData();
+      media.append('media', currentBlob);
+
+      createProjectWithMedia(media, projectName);
     } catch (e) {
       console.log(e);
-      setServerMessage({ content: e, type: 'danger' });
     }
     setProjectName('');
     setMessage({ type: '', content: '' });
     setServerMessage({ type: '', content: '' });
 
-    await getProjects();
-
-    console.log(projects);
-    unsub();
     setLoading(false);
   };
 
@@ -87,20 +95,15 @@ function RecordVideoModal({ show, setShow }) {
   }, [projectName, projects]);
 
   useEffect(() => {
-    console.log(url);
-    if (url) preview.current.src = url;
-  }, [url]);
+    if (preview.current) preview.current.src = url;
+  });
   useEffect(() => {
     setRecording(recordingActive);
   }, [recordingActive]);
 
-  useEffect(() => {
-    console.log(options.audio);
-  }, [options]);
-
   return (
-    <Modal show={show} onHide={handleClose} centered size='lg'>
-      <Modal.Header closeButton>
+    <Modal show={show} centered size='lg'>
+      <Modal.Header>
         <Modal.Title>New Project from Video Recording</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -122,9 +125,14 @@ function RecordVideoModal({ show, setShow }) {
                   {message.content}
                 </Form.Control.Feedback>
               </Form.Group>
-              <Button disabled={loading} type='submit'>
-                {loading ? 'Loading ...' : 'Submit'}
-              </Button>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  disabled={projectName.length === 0 || loading}
+                  type='submit'
+                >
+                  {loading ? 'Loading ...' : 'Submit'}
+                </Button>
+              </div>
             </Form>
             {serverMessage.content !== '' && (
               <Alert variant={serverMessage.type}>
@@ -176,11 +184,7 @@ function RecordVideoModal({ show, setShow }) {
                   Stop Recording 🟥
                 </Button>
               </div>
-              <Accordion
-                style={{ marginTop: '15px' }}
-                defaultActiveKey='0'
-                flush
-              >
+              <Accordion style={{ marginTop: '15px' }} flush>
                 <Accordion.Item eventKey='0'>
                   <Accordion.Header>
                     Preferences {'  '}
@@ -201,6 +205,9 @@ function RecordVideoModal({ show, setShow }) {
                             content={
                               <p>
                                 Adjust the delay before starting the recording.
+                                <br />
+                                Maximum is 10 seconds <br /> Minimum is 3
+                                seconds
                               </p>
                             }
                           >
@@ -213,7 +220,11 @@ function RecordVideoModal({ show, setShow }) {
                         <Form.Control
                           value={delay}
                           onChange={(e) => {
-                            setDelay(e.target.value);
+                            if (e.target.value < 3) {
+                              setDelay(3);
+                            } else if (e.target.value > 10) {
+                              setDelay(10);
+                            } else setDelay(e.target.value);
                           }}
                           type='number'
                           max={10}
@@ -302,12 +313,17 @@ function RecordVideoModal({ show, setShow }) {
       </Modal.Body>
 
       <Modal.Footer>
-        {recordingFinished && (
+        {recordingFinished && !proceed && (
           <Button onClick={() => setProceed(true)} variant='success'>
             Proceed
           </Button>
         )}
-        <Button variant='danger' onClick={() => setShow(false)}>
+        {recordingFinished && proceed && (
+          <Button onClick={() => setProceed(false)} variant='primary'>
+            Go Back
+          </Button>
+        )}
+        <Button variant='danger' onClick={handleClose} disabled={recording}>
           Cancel
         </Button>
       </Modal.Footer>

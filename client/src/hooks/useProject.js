@@ -129,6 +129,24 @@ function useProject() {
     }
   }
 
+  async function createProjectWithMedia(media, projectName) {
+    const token = localStorage.getItem('accessToken');
+
+    try {
+      await axios.post(`${baseurl}/project/new/media`, media, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          projectName,
+        },
+      });
+      return;
+    } catch (e) {
+      console.log(e.response);
+    }
+  }
+
   return {
     createProject,
     deleteProject,
@@ -137,6 +155,7 @@ function useProject() {
     deleteMediaProject,
     uploadMediaProject,
     saveTranscription,
+    createProjectWithMedia,
   };
 }
 

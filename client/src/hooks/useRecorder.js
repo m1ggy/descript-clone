@@ -19,6 +19,7 @@ const useRecorder = (
 ) => {
   const [url, setUrl] = useState('');
   const [recordingActive, setRecordingActive] = useState(false);
+  const [currentBlob, setCurrentBlob] = useState(null);
 
   async function startRecording(
     delay,
@@ -67,7 +68,6 @@ const useRecorder = (
         audio2 = audioContext.createMediaStreamSource(a2);
       }
 
-      console.log(audio1.mediaStream.getAudioTracks());
       destination = audioContext.createMediaStreamDestination();
 
       audio1.connect(destination);
@@ -78,9 +78,6 @@ const useRecorder = (
       combinedAudio = new MediaRecorder(destination.stream, {
         mimeType: 'audio/webm',
       });
-
-      console.log('Audio:', combinedAudio.stream.getTracks());
-      console.log('Video:', captureStream.getTracks());
 
       tracks.forEach((track) => {
         captureStream.removeTrack(track);
@@ -114,6 +111,7 @@ const useRecorder = (
 
         ///create new blob
         const blob = new Blob(data, { type: mimeTypes.video });
+        setCurrentBlob(blob);
         ///set the new url
         setUrl(URL.createObjectURL(blob));
         setRecordingActive(false);
@@ -140,11 +138,23 @@ const useRecorder = (
     recording.ondataavailable = (e) => data.push(e.data);
   }
 
+  function resetRecorder() {
+    setCurrentBlob(null);
+    setRecordingActive(false);
+    setUrl('');
+    data = null;
+    recording = null;
+    captureStream = null;
+    audioStream = null;
+  }
+
   return {
     startRecording,
     stopRecording,
     url,
     recordingActive,
+    currentBlob,
+    resetRecorder,
   };
 };
 
