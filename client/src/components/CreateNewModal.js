@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import useStore from '../store';
 import useProject from '../hooks/useProject';
 
@@ -42,9 +43,10 @@ function CreateNewModal({ show, setShow }) {
     e.preventDefault();
     setLoading(true);
     try {
-      setServerMessage({
-        content: await createProject(projectName),
-        type: 'success',
+      await toast.promise(createProject(projectName), {
+        success: 'Created project.',
+        pending: 'Creating project...',
+        error: 'Failed to create project.',
       });
     } catch (e) {
       console.log(e);

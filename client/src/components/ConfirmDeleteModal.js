@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 function ConfirmDeleteModal({ show, setShow, handler, project, get }) {
   const [loading, setLoading] = useState(false);
 
   const handleClose = async () => {
     setLoading(true);
 
-    await handler(project);
+    await toast.promise(handler(project), {
+      pending: 'Deleting project...',
+      success: 'Deleted project.',
+      error: 'Failed to delete project.',
+    });
     await get();
     setShow(!show);
     setLoading(false);

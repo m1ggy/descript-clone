@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
+
 import useStore from '../store';
 
 function ProjectNameForm({
@@ -39,7 +40,7 @@ function ProjectNameForm({
     }
   }, [projectName, projects]);
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     handler();
@@ -68,7 +69,9 @@ function ProjectNameForm({
         </Form.Group>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <Button
-            disabled={projectName.length === 0 || loading}
+            disabled={
+              loading ? true : message.type === 'success' ? false : true
+            }
             type='submit'
             variant='outline-success'
           >

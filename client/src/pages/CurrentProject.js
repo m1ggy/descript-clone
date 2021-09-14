@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Button, Form, ListGroup, Spinner } from 'react-bootstrap';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { FaSave, FaUndo, FaArrowLeft, FaFileExport } from 'react-icons/fa';
 import { useHistory } from 'react-router-dom';
 
@@ -126,17 +126,6 @@ function CurrentProject() {
     <Row>
       <Col lg={2} xs={0}></Col>
       <Col>
-        <ToastContainer
-          position='bottom-center'
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
         <MediaInfoModal
           selectedMedia={selectedMedia}
           show={showMedia}

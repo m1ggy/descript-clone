@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import useStore from '../store';
 import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import './projects.css';
 import CreateNewModal from '../components/CreateNewModal';
 import UserHeader from '../components/UserHeader';
@@ -26,6 +27,17 @@ function Projects() {
   return (
     <>
       <Row className='wrapper'>
+        <ToastContainer
+          position='bottom-center'
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
         <RecordVideoModal show={showVideoCreate} setShow={setShowVideoCreate} />
         <RecordAudioModal show={showAudioCreate} setShow={setShowAudioCreate} />
@@ -66,7 +78,13 @@ function Projects() {
               </Dropdown>
             </Row>
             <Col className='project-nav-items'>
-              <Row className='w-100'>
+              <Row
+                className='w-100'
+                style={{
+                  overflowY: projects.length > 0 ? 'scroll' : 'hidden',
+                  maxHeight: '75vh',
+                }}
+              >
                 <Table hover>
                   <thead>
                     <tr>
@@ -110,7 +128,7 @@ function Projects() {
                 </Table>
               </Row>
               {projects.length === 0 && (
-                <Row className='centered' style={{ height: '400px' }}>
+                <Row className='centered' style={{ height: '150px' }}>
                   <div className='centered-item'>
                     <p>No Projects</p>
                   </div>

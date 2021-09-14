@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import useRecorder from '../hooks/useRecorder';
 import CountDown from './CountDown';
 import TimeElapsed from './TimeElapsed';
@@ -42,16 +43,26 @@ function RecordAudioModal({ show, setShow }) {
       const media = new FormData();
       media.append('media', currentBlob, `${projectName}.webm`);
       media.append('projectName', projectName);
-      await createProjectWithMedia(media);
+
+      await toast.promise(createProjectWithMedia(media), {
+        success: 'Created project.',
+        pending: 'Creating project...',
+        error: 'Failed to create project.',
+      });
     } catch (e) {
       console.log(e);
     }
 
     try {
-      await getProjects();
+      await toast.promise(getProjects(), {
+        success: 'Projects updated.',
+        pending: 'Fetching projects...',
+        error: 'Failed to fetch projects.',
+      });
     } catch (e) {
       console.log(e);
     }
+    setShow(false);
     setLoading(false);
   }
   return (
