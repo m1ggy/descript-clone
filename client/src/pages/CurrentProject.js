@@ -46,6 +46,13 @@ function CurrentProject() {
     }
   }, [currentProject]);
 
+  useEffect(() => {
+    if (currentProject) {
+      if (currentProject.files) setFiles(currentProject.files.media);
+    }
+    //eslint-disable-next-line
+  }, []);
+
   // useEffect(() => {
   //   if (waveSurfer) {
   //     // waveSurfer.load(
@@ -81,10 +88,9 @@ function CurrentProject() {
             })
             .then(({ data }) => {
               data.text().then((text) => {
-                if (text !== transcription) {
-                  setTranscription(text);
-                  setOldTS(text);
-                }
+                setTranscription(text);
+                setOldTS(text);
+
                 setLoading(false);
               });
             });

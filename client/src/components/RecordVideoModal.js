@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Form, Accordion, Alert } from 'react-bootstrap';
+import { Modal, Button, Form, Accordion } from 'react-bootstrap';
 import useRecorder from '../hooks/useRecorder';
 import CountDown from './CountDown';
 import OverlayToolTip from './OverlayToolTip';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { IoSettingsOutline } from 'react-icons/io5';
-import useStore from '../store';
 import useProject from '../hooks/useProject';
+import TimeElapsed from './TimeElapsed';
+import ProjectNameForm from './ProjectNameForm';
 
 function RecordVideoModal({ show, setShow }) {
   const [options, setOptions] = useState({ audio: false, video: true });
@@ -15,12 +16,10 @@ function RecordVideoModal({ show, setShow }) {
   const [proceed, setProceed] = useState(false);
   const [recordingFinished, setRecordingFinished] = useState(false);
   const [projectName, setProjectName] = useState('');
-  const [message, setMessage] = useState({ content: '', type: '' });
-  const [serverMessage, setServerMessage] = useState({ type: '', content: '' });
+
   const [loading, setLoading] = useState(false);
 
-  const { createProjectWithMedia } = useProject();
-  const projects = useStore((state) => state.projects);
+  const { createProjectWithMedia, getProjects } = useProject();
 
   const preview = useRef();
   const {
@@ -49,50 +48,26 @@ function RecordVideoModal({ show, setShow }) {
     setShow(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  async function handler() {
     setLoading(true);
     try {
       console.log(currentBlob);
       const media = new FormData();
-      media.append('media', currentBlob);
-
-      createProjectWithMedia(media, projectName);
+      media.append('media', currentBlob, `${projectName}.webm`);
+      media.append('projectName', projectName);
+      await createProjectWithMedia(media);
     } catch (e) {
       console.log(e);
     }
-    setProjectName('');
-    setMessage({ type: '', content: '' });
-    setServerMessage({ type: '', content: '' });
 
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (projectName === '') {
-      return;
-    } else if (projectName.length < 5 || projectName.length > 20) {
-      return setMessage({
-        type: 'danger',
-        content: 'Project name should be 5 characters to 20 characters long!',
-      });
-    } else {
-      const filtered = projects.filter(
-        (x) => x.projectName === projectName.trim()
-      );
-
-      if (filtered.length) {
-        return setMessage({
-          type: 'danger',
-          content: `You already have a project named ${projectName}`,
-        });
-      }
-      setMessage({
-        type: 'success',
-        content: `${projectName} is available.`,
-      });
+    try {
+      await getProjects();
+    } catch (e) {
+      console.log(e);
     }
-  }, [projectName, projects]);
+    setLoading(false);
+    setShow(false);
+  }
 
   useEffect(() => {
     if (preview.current) preview.current.src = url;
@@ -109,36 +84,11 @@ function RecordVideoModal({ show, setShow }) {
       <Modal.Body>
         {proceed ? (
           <>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group>
-                <Form.Label>Project Name</Form.Label>
-                <Form.Control
-                  type='text'
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  isInvalid={message.type === 'danger' && true}
-                  isValid={message.type === 'success' && true}
-                />
-                <Form.Control.Feedback
-                  type={message.type === 'success' ? 'valid' : 'invalid'}
-                >
-                  {message.content}
-                </Form.Control.Feedback>
-              </Form.Group>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  disabled={projectName.length === 0 || loading}
-                  type='submit'
-                >
-                  {loading ? 'Loading ...' : 'Submit'}
-                </Button>
-              </div>
-            </Form>
-            {serverMessage.content !== '' && (
-              <Alert variant={serverMessage.type}>
-                {serverMessage.content}
-              </Alert>
-            )}
+            <ProjectNameForm
+              projectName={projectName}
+              setProjectName={setProjectName}
+              handler={handler}
+            />
           </>
         ) : (
           <>
@@ -164,7 +114,6 @@ function RecordVideoModal({ show, setShow }) {
                       delay * 1000,
                       options.audio,
                       setShowCountdown,
-                      options.audio,
                       setRecordingFinished
                     );
                   }}
@@ -280,8 +229,12 @@ function RecordVideoModal({ show, setShow }) {
                   display: 'flex',
                   justifyContent: 'center',
                   marginTop: '25px',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                 }}
               >
+                <p>Recording in:</p>
+
                 <CountDown delay={delay} />
               </div>
             )}
@@ -292,9 +245,13 @@ function RecordVideoModal({ show, setShow }) {
                   display: 'flex',
                   justifyContent: 'center',
                   marginTop: '25px',
+                  flexDirection: 'column',
+                  textAlign: 'center',
                 }}
               >
                 <h3>Recording now....</h3>
+
+                <TimeElapsed start={new Date()} stop={recordingFinished} />
               </div>
             )}
             {url && (
@@ -319,11 +276,19 @@ function RecordVideoModal({ show, setShow }) {
           </Button>
         )}
         {recordingFinished && proceed && (
-          <Button onClick={() => setProceed(false)} variant='primary'>
+          <Button
+            onClick={() => setProceed(false)}
+            variant='primary'
+            disabled={loading}
+          >
             Go Back
           </Button>
         )}
-        <Button variant='danger' onClick={handleClose} disabled={recording}>
+        <Button
+          variant='danger'
+          onClick={handleClose}
+          disabled={recording || loading}
+        >
           Cancel
         </Button>
       </Modal.Footer>

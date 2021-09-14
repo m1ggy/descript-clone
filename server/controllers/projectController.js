@@ -340,21 +340,108 @@ export const CreateProjectWithMedia = [
   async (req, res) => {
     const {
       user: { user },
+      body: { projectName },
+      file,
     } = req;
 
-    if (projectName == null)
-      return res.send(404).json({ message: 'project name is not provided.' });
+    console.log(user, projectName, file);
+
+    if (projectName == null || file == null)
+      return res.status(404).json({ message: 'project info is not provided.' });
 
     //common path
-    const path = `${__dirname}/temp/${projectName}.txt`;
+    const textPath = `${__dirname}/temp/${projectName}.txt`;
+    const mediaPath = file.path;
 
-    ///create local text file
-    fs.writeFile(path, '', (err) => {
-      if (err)
-        return res.status(400).json({ message: 'An error occurred', err });
+    ///create temp file
+    try {
+      await fs.promises.writeFile(textPath, '');
       console.log('created text file');
-    });
+    } catch (e) {
+      return res
+        .status(404)
+        .json({ message: 'cannot create temp text file', e });
+    }
 
-    return res.status(200).json({ message: 'CreateProjectWithMedia Route' });
+    ///paths for GCS files
+    const textDestination = `${user}/${projectName}/${projectName}.txt`;
+    const mediaDestination = `${user}/${projectName}/${file.originalname}`;
+
+    ///paths for local temp file to GCS
+    const text = projectBucket.file(textDestination);
+    const media = projectBucket.file(mediaDestination);
+
+    if ((await text.exists()[0]) || (await media.exists()[0]))
+      return res.status(400).json({ message: 'project already exists' });
+
+    try {
+      ////upload files to GCS
+      await projectBucket.upload(textPath, {
+        destination: textDestination,
+        metadata: {
+          cacheControl: 'private, max-age=0, no-transform',
+        },
+      });
+      console.log(`Uploaded file ${text.name}`);
+      await projectBucket.upload(mediaPath, {
+        destination: mediaDestination,
+        metadata: {
+          cacheControl: 'private, max-age=0, no-transform',
+        },
+      });
+      console.log(`Uploaded file ${media.name}`);
+    } catch (e) {
+      return res.status(400).json({ message: 'failed to upload files', e });
+    }
+
+    ///add to new project to db
+    try {
+      ///create new project for the db
+      const newProject = new projectModel({
+        projectName,
+        files: {
+          transcription: { link: text.publicUrl(), createdAt: new Date() },
+          media: [
+            {
+              url: media.publicUrl(),
+              name: file.originalname,
+              type: file.mimetype,
+              createdAt: new Date(),
+            },
+          ],
+        },
+        owner: user,
+      });
+      await newProject.save();
+
+      ///add new project to user
+
+      const project = await projectModel.findOne({ projectName }).exec();
+
+      await userModel
+        .findOneAndUpdate(
+          { username: user },
+          {
+            $push: {
+              projects: { projectName, createdAt: new Date(), id: project._id },
+            },
+          }
+        )
+        .exec();
+      console.log('added project to DB');
+    } catch (e) {
+      return res.status(400).json({ message: 'An Error occurred.', e });
+    }
+
+    //// delete temp file
+    try {
+      await fs.promises.unlink(mediaPath);
+      await fs.promises.unlink(textPath);
+      console.log('deleted temp file');
+    } catch (e) {
+      return res.status(404).json({ message: 'cannot delete temp file', e });
+    }
+
+    return res.status(200).json({ message: 'successfully create project' });
   },
 ];

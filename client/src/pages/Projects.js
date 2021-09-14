@@ -9,12 +9,14 @@ import useProject from '../hooks/useProject';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { formatDateLocale } from '../helpers/date';
 import RecordVideoModal from '../components/RecordVideoModal';
+import RecordAudioModal from '../components/RecordAudioModal';
 
 function Projects() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showVideoCreate, setShowVideoCreate] = useState(false);
   const [selectedProject, setSelectedProject] = useState('');
+  const [showAudioCreate, setShowAudioCreate] = useState(false);
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
   const history = useHistory();
@@ -26,6 +28,7 @@ function Projects() {
       <Row className='wrapper'>
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
         <RecordVideoModal show={showVideoCreate} setShow={setShowVideoCreate} />
+        <RecordAudioModal show={showAudioCreate} setShow={setShowAudioCreate} />
         <ConfirmDeleteModal
           show={showDelete}
           setShow={setShowDelete}
@@ -53,7 +56,9 @@ function Projects() {
                   <Dropdown.Item onClick={() => setShowVideoCreate(true)}>
                     Video Recording
                   </Dropdown.Item>
-                  <Dropdown.Item>Audio Recording</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setShowAudioCreate(true)}>
+                    Audio Recording
+                  </Dropdown.Item>
                   <Dropdown.Item onClick={() => setShowCreate(true)}>
                     Empty Project
                   </Dropdown.Item>

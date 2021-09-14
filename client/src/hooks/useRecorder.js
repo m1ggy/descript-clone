@@ -21,13 +21,15 @@ const useRecorder = (
   const [recordingActive, setRecordingActive] = useState(false);
   const [currentBlob, setCurrentBlob] = useState(null);
 
-  async function startRecording(
-    delay,
-    audio = true,
-    setCountdown,
-    enableAudio,
-    finished
-  ) {
+  /**
+   * starts recording with video and/or audio
+   * @param {number} delay delay before starting the recording
+   * @param {boolean} audio boolean value to determine if audio is included, defaults to false
+   * @param {function} setCountdown setter function for starting the countdown
+   * @param {function} finished setter function to flag when recording is finished
+   * @returns {void}
+   */
+  async function startRecording(delay, audio = false, setCountdown, finished) {
     finished(false);
     setUrl('');
     data = [];
@@ -38,7 +40,7 @@ const useRecorder = (
           audio: true,
         });
       } catch (e) {
-        console.log(e);
+        audio = false;
       }
     }
     if (video) {
@@ -93,11 +95,11 @@ const useRecorder = (
 
       recording.onstop = () => {
         ///stop all streams
-        console.log(captureStream.getTracks());
+        console.log(combinedAudio);
         captureStream.getTracks().forEach((track) => {
           track.stop();
         });
-        if (enableAudio) {
+        if (audio && combinedAudio) {
           combinedAudio.stream.getTracks().forEach((t) => t.stop());
           // stop tracks stream
 
@@ -131,21 +133,72 @@ const useRecorder = (
       }
     }
   }
+
+  /**
+   * Stops the recording and saves chunks to the data array
+   *
+   */
   function stopRecording() {
     ///stop recording
     recording.stop();
     ///add chunks to data array
     recording.ondataavailable = (e) => data.push(e.data);
   }
-
+  /**
+   * Resets the recorder
+   */
   function resetRecorder() {
     setCurrentBlob(null);
     setRecordingActive(false);
     setUrl('');
-    data = null;
+    data = [];
     recording = null;
     captureStream = null;
     audioStream = null;
+  }
+
+  /**Starts the audio recording, returns a boolean value
+   *
+   * @param {number} delay The amount of delay in milliseconds before starting the recording
+   * @param {function} finished  the setter function to indicate if the recording is finished
+   * @param {function} startCountdown the setter function to indicate the start of the countdown
+   * @returns {boolean} returns a boolean value depending on the result of the recording
+   */
+  async function startAudioRecording(delay = 3000, finished, startCountdown) {
+    try {
+      const audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      if (audioStream.getTracks().length <= 0) return false;
+
+      recording = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+
+      recording.onstop = () => {
+        ///stop all streams
+        audioStream.getTracks().forEach((x) => {
+          x.stop();
+        });
+        ///create new blob
+        const blob = new Blob(data, { type: 'audio/webm' });
+        ///set the blob and url
+        setCurrentBlob(blob);
+        setUrl(URL.createObjectURL(blob));
+        //set flags
+        setRecordingActive(false);
+        finished(true);
+        return true;
+      };
+
+      startCountdown(true);
+      setTimeout(() => {
+        recording.start();
+        setRecordingActive(true);
+        startCountdown(false);
+      }, delay);
+    } catch {
+      return false;
+    }
   }
 
   return {
@@ -155,6 +208,7 @@ const useRecorder = (
     recordingActive,
     currentBlob,
     resetRecorder,
+    startAudioRecording,
   };
 };
 

@@ -129,19 +129,16 @@ function useProject() {
     }
   }
 
-  async function createProjectWithMedia(media, projectName) {
+  async function createProjectWithMedia(media) {
     const token = localStorage.getItem('accessToken');
 
     try {
-      await axios.post(`${baseurl}/project/new/media`, media, {
+      const res = await axios.post(`${baseurl}/project/new/media`, media, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        data: {
-          projectName,
-        },
       });
-      return;
+      console.log(res);
     } catch (e) {
       console.log(e.response);
     }

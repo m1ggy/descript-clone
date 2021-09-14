@@ -209,7 +209,7 @@ function Signup() {
               validation.pass.valid === false ||
               validation.username.valid === false
                 ? true
-                : false
+                : false || loading
             }
           >
             {loading ? 'Creating account ...' : 'Create Account'}
