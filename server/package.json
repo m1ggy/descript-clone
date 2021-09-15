@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --es-module-specifier-resolution=node --experimental-wasm-threads --experimental-wasm-bulk-memory server"
+    "dev": "nodemon --ignore temp/* --es-module-specifier-resolution=node --experimental-wasm-threads --experimental-wasm-bulk-memory server"
   },
   "keywords": [],
   "author": "",

@@ -1,5 +1,20 @@
 import speech from '@google-cloud/speech';
 import { Storage } from '@google-cloud/storage';
+import fs from 'fs';
+import path from 'path';
+import projectModel from '../models/project';
+
+const __dirname = path.resolve();
+///create local temp dir if it does not exist
+
+/**
+ * Creates the temp folder
+ */
+async function makeTempDir() {
+  await fs.promises.mkdir(`${__dirname}/temp/`, { recursive: true });
+}
+
+makeTempDir();
 
 ///storage
 const gc = new Storage({
@@ -65,27 +80,62 @@ export const createTranscription = async (req, res) => {
     const [response] = await operation.promise();
 
     console.log('transcription complete');
-    console.log(response);
 
-    response.results.forEach((result) => {
-      console.log(`Transcription: ${result.alternatives[0].transcript}`);
-      result.alternatives[0].words.forEach((wordInfo) => {
-        // NOTE: If you have a time offset exceeding 2^32 seconds, use the
-        // wordInfo.{x}Time.seconds.high to calculate seconds.
-        const startSecs =
-          `${wordInfo.startTime.seconds}` +
-          '.' +
-          wordInfo.startTime.nanos / 100000000;
-        const endSecs =
-          `${wordInfo.endTime.seconds}` +
-          '.' +
-          wordInfo.endTime.nanos / 100000000;
-        console.log(`Word: ${wordInfo.word}`);
-        console.log(`\t ${startSecs} secs - ${endSecs} secs`);
-      });
+    const transcriptionLocalPath = `${__dirname}/temp/${projectName}-transcription.json`;
+
+    await fs.promises.writeFile(
+      transcriptionLocalPath,
+      JSON.stringify(response.results, null, 2)
+    );
+
+    console.log('created local file');
+
+    const transcriptionPath = `${user}/${projectName}/transcription.json`;
+
+    await projectBucket.upload(transcriptionLocalPath, {
+      destination: transcriptionPath,
+      metadata: {
+        cacheControl: 'private, max-age=0, no-transform',
+      },
     });
+    console.log('uploaded json file');
 
-    res.status(200).json({ message: 'create transcription post' });
+    const transcription = projectBucket.file(transcriptionPath);
+
+    const currentProject = await projectModel.findOne({ projectName }).exec();
+
+    if (currentProject == null)
+      return res.status(404).json('Project does not exists');
+
+    currentProject.transcribed = true;
+    currentProject.files.json = {
+      path: transcriptionPath,
+      url: transcription.publicUrl(),
+      createdAt: new Date(),
+    };
+    await currentProject.save();
+    console.log('added to db');
+    // response.results.forEach((result) => {
+    //   console.log(`Transcription: ${result.alternatives[0].transcript}`);
+    //   result.alternatives[0].words.forEach((wordInfo) => {
+    //     // NOTE: If you have a time offset exceeding 2^32 seconds, use the
+    //     // wordInfo.{x}Time.seconds.high to calculate seconds.
+    //     const startSecs =
+    //       `${wordInfo.startTime.seconds}` +
+    //       '.' +
+    //       wordInfo.startTime.nanos / 100000000;
+    //     const endSecs =
+    //       `${wordInfo.endTime.seconds}` +
+    //       '.' +
+    //       wordInfo.endTime.nanos / 100000000;
+    //     console.log(`Word: ${wordInfo.word}`);
+    //     console.log(`\t ${startSecs} secs - ${endSecs} secs`);
+    //   });
+    // });
+
+    await fs.promises.unlink(transcriptionLocalPath);
+    console.log('deleted local file');
+    return res.status(200).json({ message: 'create transcription post' });
   } catch (e) {
     console.log(e);
   }
