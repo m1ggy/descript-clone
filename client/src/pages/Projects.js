@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import useStore from '../store';
 import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+
 import './projects.css';
 import CreateNewModal from '../components/CreateNewModal';
 import UserHeader from '../components/UserHeader';
@@ -27,17 +27,6 @@ function Projects() {
   return (
     <>
       <Row className='wrapper'>
-        <ToastContainer
-          position='bottom-center'
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
         <CreateNewModal show={showCreate} setShow={setShowCreate} />
         <RecordVideoModal show={showVideoCreate} setShow={setShowVideoCreate} />
         <RecordAudioModal show={showAudioCreate} setShow={setShowAudioCreate} />

@@ -74,7 +74,7 @@ function useProject() {
     }
   }
 
-  async function deleteMediaProject(id, filename) {
+  async function deleteMediaProject(id, filename, converted = false) {
     const token = localStorage.getItem('accessToken');
     try {
       const res = await axios.delete(`${baseurl}/project/${id}/media`, {
@@ -83,6 +83,7 @@ function useProject() {
         },
         data: {
           filename,
+          converted,
         },
       });
       fetchProject(id);

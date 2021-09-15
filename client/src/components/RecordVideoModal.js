@@ -65,8 +65,15 @@ function RecordVideoModal({ show, setShow }) {
     } catch (e) {
       console.log(e);
     }
-    setLoading(false);
+
+    resetRecorder();
+    setRecording(false);
+    setRecordingFinished(false);
+    setProjectName('');
+    setShowCountdown(false);
+    setProceed(false);
     setShow(false);
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -287,7 +294,7 @@ function RecordVideoModal({ show, setShow }) {
         <Button
           variant='danger'
           onClick={handleClose}
-          disabled={recording || loading}
+          disabled={showCountdown || recording || loading}
         >
           Cancel
         </Button>

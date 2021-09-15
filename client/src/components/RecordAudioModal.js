@@ -181,7 +181,7 @@ function RecordAudioModal({ show, setShow }) {
             setShow(false);
             resetRecorder();
           }}
-          disabled={loading}
+          disabled={loading || startCountdown || recordingActive}
         >
           Cancel
         </Button>

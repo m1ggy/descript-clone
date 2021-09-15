@@ -12,11 +12,14 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
   const handleDelete = async () => {
     setLoading(true);
     toast
-      .promise(deleteMediaProject(id, selectedMedia.name), {
-        pending: `Deleting media`,
-        error: 'Failed to delete media',
-        success: `Deleted ${selectedMedia.name}`,
-      })
+      .promise(
+        deleteMediaProject(id, selectedMedia.name, selectedMedia?.converted),
+        {
+          pending: `Deleting media`,
+          error: 'Failed to delete media',
+          success: `Deleted ${selectedMedia.name}`,
+        }
+      )
       .then(() => {
         setLoading(false);
         setShow(false);
@@ -64,7 +67,7 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
                   ) : x === 'createdAt' ? (
                     formatDateLocale(selectedMedia[`${x}`])
                   ) : (
-                    selectedMedia[`${x}`]
+                    selectedMedia[`${x}`].toString()
                   )}
                 </p>
               </div>
@@ -73,7 +76,8 @@ function MediaInfoModal({ selectedMedia, show, setShow, id }) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        {selectedMedia.type == null ? null : (
+        {selectedMedia.type == null ||
+        selectedMedia?.converted === true ? null : (
           <Button variant='primary' onClick={handleDelete} disabled={loading}>
             Delete
           </Button>

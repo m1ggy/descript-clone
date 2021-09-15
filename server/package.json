@@ -5,12 +5,14 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --es-module-specifier-resolution=node server"
+    "dev": "nodemon --es-module-specifier-resolution=node --experimental-wasm-threads --experimental-wasm-bulk-memory server"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.1",
     "@google-cloud/storage": "^5.14.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",

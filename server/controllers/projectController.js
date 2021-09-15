@@ -4,6 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import projectModel from '../models/project.js';
 import userModel from '../models/user.js';
+import { convertToMp3 } from '../utils.js';
 
 const __dirname = path.resolve();
 
@@ -27,6 +28,13 @@ async function configureBucket() {
       method: ['GET', 'HEAD', 'DELETE', 'OPTIONS'],
     },
   ]);
+
+  async function createTempDir() {
+    await fs.promises.mkdir(`${__dirname}/temp/`, { recursive: true });
+  }
+
+  createTempDir();
+
   await projectBucket.makePublic();
 }
 configureBucket().catch(console.error);
@@ -166,8 +174,6 @@ export const deleteProject = async (req, res) => {
 
     files = files.filter((x) => x.name.includes(`${destination}`));
 
-    console.log(files);
-
     files.forEach(async (x) => {
       try {
         await x.delete();
@@ -225,14 +231,36 @@ export const updateProject = [
 
     const destination = `${user}/${projectName}/${req.file.originalname}`;
     const path = req.file.path;
+    let convertedAudioPath = null;
+    let convertedAudioDestination = null;
+    let convertedAudioFile = null;
+
+    if (req.file.mimetype.includes('video')) {
+      try {
+        convertedAudioPath = await convertToMp3(
+          path,
+          req.file.originalname,
+          projectName
+        );
+        convertedAudioDestination = `${user}/${projectName}/${projectName}.mp3`;
+      } catch (e) {
+        return;
+      }
+    }
 
     try {
       await projectBucket.upload(path, { destination });
+      await projectBucket.upload(convertedAudioPath, {
+        destination: convertedAudioDestination,
+      });
 
       ///delete temp file
       await fs.promises.unlink(req.file.path);
+      if (convertedAudioPath) await fs.promises.unlink(convertedAudioPath);
 
       const newMedia = projectBucket.file(destination);
+      if (convertedAudioDestination)
+        convertedAudioFile = projectBucket.file(convertedAudioDestination);
 
       await projectModel
         .findByIdAndUpdate(id, {
@@ -246,6 +274,21 @@ export const updateProject = [
           },
         })
         .exec();
+      if (convertedAudioFile)
+        await projectModel
+          .findByIdAndUpdate(id, {
+            $push: {
+              'files.media': {
+                name: `${projectName}.mp3`,
+                url: convertedAudioFile.publicUrl(),
+                type: 'audio/mp3',
+                createdAt: new Date(),
+                converted: true,
+                main: req.file.originalname,
+              },
+            },
+          })
+          .exec();
 
       // /return
       return res.status(200).json({ message: 'updated project' });
@@ -258,30 +301,58 @@ export const updateProject = [
 export const deleteMediaProject = async (req, res) => {
   const {
     user: { user },
-    body: { filename },
+    body: { filename, converted },
     params: { id },
   } = req;
 
   try {
-    await projectModel
-      .findByIdAndUpdate(id, {
-        $pull: { 'files.media': { name: filename } },
-      })
-      .exec();
+    if (converted === false) {
+      await projectModel.findByIdAndUpdate(id, { 'files.media': [] }).exec();
+    } else {
+      await projectModel
+        .findByIdAndUpdate(id, {
+          $pull: { 'files.media': { name: filename } },
+        })
+        .exec();
+    }
 
     const currentProject = await projectModel.findById(id).exec();
 
-    const path = `${user}/${currentProject.projectName}/${filename}`;
+    if (converted === false) {
+      try {
+        //delete file from storage, project collection and user collection
+        let [files] = await projectBucket.getFiles();
 
-    const fileToDelete = projectBucket.file(path);
+        files = files.filter((x) =>
+          x.name.includes(`${user}/${currentProject.projectName}/`)
+        );
+        files = files.filter((x) => !x.name.includes('.txt'));
 
-    if (await fileToDelete.exists()) {
-      await fileToDelete.delete();
+        files.forEach(async (x) => {
+          try {
+            await x.delete();
+          } catch (e) {
+            return console.log(e);
+          }
+        });
+      } catch (e) {
+        return res.status(400).json({ message: 'failed to delete files' });
+      }
+
       return res.status(200).json({ message: 'Deleted media' });
     } else {
-      return res
-        .status(404)
-        .json({ message: 'Failed to delete media: file does not exist' });
+      const path = `${user}/${currentProject.projectName}/${filename}`;
+
+      const fileToDelete = projectBucket.file(path);
+
+      if (await fileToDelete.exists()) {
+        await fileToDelete.delete();
+        return res.status(200).json({ message: 'Deleted media' });
+      } else {
+        return res
+          .status(404)
+          .json({ message: 'Failed to delete media: file does not exist' });
+      }
     }
   } catch (e) {
     return res.status(404).json({ message: 'Failed to delete media', e });
@@ -344,7 +415,19 @@ export const CreateProjectWithMedia = [
       file,
     } = req;
 
-    console.log(user, projectName, file);
+    ///create local temp directory
+
+    console.log(file);
+    let convertedAudio = null;
+    let convertedDestination = null;
+    let converted = null;
+    if (file.mimetype.includes('video')) {
+      convertedAudio = await convertToMp3(
+        file.path,
+        file.originalname,
+        projectName
+      );
+    }
 
     if (projectName == null || file == null)
       return res.status(404).json({ message: 'project info is not provided.' });
@@ -367,9 +450,16 @@ export const CreateProjectWithMedia = [
     const textDestination = `${user}/${projectName}/${projectName}.txt`;
     const mediaDestination = `${user}/${projectName}/${file.originalname}`;
 
+    ///if there is a converted audio, create a new destination for GCS
+    if (convertedAudio) {
+      convertedDestination = `${user}/${projectName}/${projectName}.mp3`;
+    }
+
     ///paths for local temp file to GCS
     const text = projectBucket.file(textDestination);
     const media = projectBucket.file(mediaDestination);
+    if (convertedDestination)
+      converted = projectBucket.file(convertedDestination);
 
     if ((await text.exists()[0]) || (await media.exists()[0]))
       return res.status(400).json({ message: 'project already exists' });
@@ -389,7 +479,18 @@ export const CreateProjectWithMedia = [
           cacheControl: 'private, max-age=0, no-transform',
         },
       });
+
       console.log(`Uploaded file ${media.name}`);
+
+      if (convertedDestination) {
+        await projectBucket.upload(convertedAudio, {
+          destination: convertedDestination,
+          metadata: {
+            cacheControl: 'private, max-age=0, no-transform',
+          },
+        });
+        console.log(`Uploaded file ${converted.name}.`);
+      }
     } catch (e) {
       return res.status(400).json({ message: 'failed to upload files', e });
     }
@@ -397,25 +498,52 @@ export const CreateProjectWithMedia = [
     ///add to new project to db
     try {
       ///create new project for the db
-      const newProject = new projectModel({
-        projectName,
-        files: {
-          transcription: { link: text.publicUrl(), createdAt: new Date() },
-          media: [
-            {
-              url: media.publicUrl(),
-              name: file.originalname,
-              type: file.mimetype,
-              createdAt: new Date(),
-            },
-          ],
-        },
-        owner: user,
-      });
-      await newProject.save();
+
+      if (converted) {
+        const newProject = new projectModel({
+          projectName,
+          files: {
+            transcription: { link: text.publicUrl(), createdAt: new Date() },
+            media: [
+              {
+                url: media.publicUrl(),
+                name: file.originalname,
+                type: file.mimetype,
+                createdAt: new Date(),
+              },
+              {
+                url: converted.publicUrl(),
+                name: 'converted.mp3',
+                type: 'audio/mp3',
+                createdAt: new Date(),
+                converted: true,
+                main: file.originalname,
+              },
+            ],
+          },
+          owner: user,
+        });
+        await newProject.save();
+      } else {
+        const newProject = new projectModel({
+          projectName,
+          files: {
+            transcription: { link: text.publicUrl(), createdAt: new Date() },
+            media: [
+              {
+                url: media.publicUrl(),
+                name: file.originalname,
+                type: file.mimetype,
+                createdAt: new Date(),
+              },
+            ],
+          },
+          owner: user,
+        });
+        await newProject.save();
+      }
 
       ///add new project to user
-
       const project = await projectModel.findOne({ projectName }).exec();
 
       await userModel
@@ -433,10 +561,13 @@ export const CreateProjectWithMedia = [
       return res.status(400).json({ message: 'An Error occurred.', e });
     }
 
-    //// delete temp file
+    // delete temp file
     try {
       await fs.promises.unlink(mediaPath);
       await fs.promises.unlink(textPath);
+      if (convertedAudio) {
+        await fs.promises.unlink(convertedAudio);
+      }
       console.log('deleted temp file');
     } catch (e) {
       return res.status(404).json({ message: 'cannot delete temp file', e });

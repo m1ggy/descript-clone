@@ -15,7 +15,6 @@ import useStore from '../store';
 // import WaveSurfer from 'wavesurfer.js';
 
 import './currentProject.css';
-import 'react-toastify/dist/ReactToastify.min.css';
 
 function CurrentProject() {
   const history = useHistory();
