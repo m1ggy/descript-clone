@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/project.js';
+import transcriptionRoutes from './routes/transcription';
 import { authorize } from './utils.js';
 dotenv.config();
 
@@ -24,9 +25,10 @@ mongoose.connect(process.env.DB_URI, (error) => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  //auth route
+  //routes
   app.use(authRoutes);
   app.use('/project', authorize, projectRoutes);
+  app.use('/transcription', authorize, transcriptionRoutes);
 
   const port = process.env.PORT || 5000;
   app.listen(port, () => {

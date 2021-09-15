@@ -45,7 +45,7 @@ export function authorize(req, res, next) {
  */
 export async function convertToMp3(pathToVideo, filename, newName) {
   const ffmpeg = createFFmpeg();
-  const newPath = `${__dirname}/temp/converted/${newName}.mp3`;
+  const newPath = `${__dirname}/temp/converted/${newName}Audio.webm`;
 
   try {
     await fs.promises.mkdir(`${__dirname}/temp/converted/`, {
@@ -62,12 +62,12 @@ export async function convertToMp3(pathToVideo, filename, newName) {
       '0',
       '-map',
       'a?',
-      `${newName}.mp3`
+      `${newName}Audio.webm`
     );
 
     await fs.promises.writeFile(
       newPath,
-      ffmpeg.FS('readFile', `${newName}.mp3`)
+      ffmpeg.FS('readFile', `${newName}Audio.webm`)
     );
 
     return newPath;

@@ -242,7 +242,7 @@ export const updateProject = [
           req.file.originalname,
           projectName
         );
-        convertedAudioDestination = `${user}/${projectName}/${projectName}.mp3`;
+        convertedAudioDestination = `${user}/${projectName}/${projectName}Audio.webm`;
       } catch (e) {
         return;
       }
@@ -279,9 +279,9 @@ export const updateProject = [
           .findByIdAndUpdate(id, {
             $push: {
               'files.media': {
-                name: `${projectName}.mp3`,
+                name: `${projectName}Audio.webm`,
                 url: convertedAudioFile.publicUrl(),
-                type: 'audio/mp3',
+                type: 'audio/webm',
                 createdAt: new Date(),
                 converted: true,
                 main: req.file.originalname,
@@ -452,7 +452,7 @@ export const CreateProjectWithMedia = [
 
     ///if there is a converted audio, create a new destination for GCS
     if (convertedAudio) {
-      convertedDestination = `${user}/${projectName}/${projectName}.mp3`;
+      convertedDestination = `${user}/${projectName}/${projectName}Audio.webm`;
     }
 
     ///paths for local temp file to GCS
@@ -513,8 +513,8 @@ export const CreateProjectWithMedia = [
               },
               {
                 url: converted.publicUrl(),
-                name: 'converted.mp3',
-                type: 'audio/mp3',
+                name: 'convertedAudio.webm',
+                type: 'audio/webm',
                 createdAt: new Date(),
                 converted: true,
                 main: file.originalname,

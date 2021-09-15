@@ -37,7 +37,11 @@ const useRecorder = (
     if (audio) {
       try {
         audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: {
+            autoGainControl: false,
+            echoCancellation: false,
+            noiseSuppression: false,
+          },
         });
       } catch (e) {
         audio = false;
@@ -172,7 +176,6 @@ const useRecorder = (
           autoGainControl: false,
           echoCancellation: false,
           noiseSuppression: false,
-          channelCount: 2,
         },
       });
 
@@ -186,10 +189,11 @@ const useRecorder = (
       recording.onstop = () => {
         ///stop all streams
         audioStream.getTracks().forEach((x) => {
+          console.log(x.getSettings());
           x.stop();
         });
         ///create new blob
-        const blob = new Blob(data, { type: 'audio/flac' });
+        const blob = new Blob(data, { type: 'audio/webm' });
         ///set the blob and url
         setCurrentBlob(blob);
         setUrl(URL.createObjectURL(blob));
