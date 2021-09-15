@@ -113,7 +113,9 @@ export const createTranscription = async (req, res) => {
       url: transcription.publicUrl(),
       createdAt: new Date(),
     };
-    await currentProject.save();
+    currentProject.save().then((doc) => {
+      console.log(doc);
+    });
     console.log('added to db');
     // response.results.forEach((result) => {
     //   console.log(`Transcription: ${result.alternatives[0].transcript}`);

@@ -3,7 +3,11 @@ import mongoose from 'mongoose';
 const projectSchema = new mongoose.Schema(
   {
     projectName: { type: String, required: true },
-    files: {},
+    files: {
+      transcription: { type: Object },
+      media: { type: Array },
+      json: { type: Object },
+    },
     owner: { type: String, required: true },
     transcribed: { type: Boolean, default: false },
   },
