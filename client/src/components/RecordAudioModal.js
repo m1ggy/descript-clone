@@ -31,7 +31,6 @@ function RecordAudioModal({ show, setShow }) {
   }, [recordingActive]);
 
   useEffect(() => {
-    console.log(url);
     if (preview.current && url) {
       preview.current.src = url;
     }

@@ -212,7 +212,11 @@ function Signup() {
                 : false || loading
             }
           >
-            {loading ? 'Creating account ...' : 'Create Account'}
+            {loading ? (
+              <small>Creating account...</small>
+            ) : (
+              <small>Create Account</small>
+            )}
           </Button>
         </Card.Body>
         <Card.Footer>

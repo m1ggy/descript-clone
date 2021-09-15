@@ -166,13 +166,22 @@ const useRecorder = (
    */
   async function startAudioRecording(delay = 3000, finished, startCountdown) {
     try {
+      ///create audiostream with constraints
       const audioStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: {
+          autoGainControl: false,
+          echoCancellation: false,
+          noiseSuppression: false,
+          channelCount: 2,
+        },
       });
 
       if (audioStream.getTracks().length <= 0) return false;
 
-      recording = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+      recording = new MediaRecorder(audioStream, {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000,
+      });
 
       recording.onstop = () => {
         ///stop all streams
@@ -180,7 +189,7 @@ const useRecorder = (
           x.stop();
         });
         ///create new blob
-        const blob = new Blob(data, { type: 'audio/webm' });
+        const blob = new Blob(data, { type: 'audio/flac' });
         ///set the blob and url
         setCurrentBlob(blob);
         setUrl(URL.createObjectURL(blob));
@@ -192,11 +201,12 @@ const useRecorder = (
 
       startCountdown(true);
       setTimeout(() => {
-        recording.start();
+        recording?.start();
         setRecordingActive(true);
         startCountdown(false);
       }, delay);
-    } catch {
+    } catch (e) {
+      console.log(e);
       return false;
     }
   }
