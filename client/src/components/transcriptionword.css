@@ -1,0 +1,12 @@
+.option-item {
+  user-select: none;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.option-item:hover {
+  background-color: #d2ebf5;
+}

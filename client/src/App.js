@@ -29,9 +29,7 @@ function App() {
           <Route path='/' exact>
             <Login />
           </Route>
-          <Route path='/projects/:id'>
-            <CurrentProject />
-          </Route>
+          <PrivateRoute component={CurrentProject} path='/projects/:id' />
           <PrivateRoute component={Projects} path='/projects' />
 
           <Route path='*'>

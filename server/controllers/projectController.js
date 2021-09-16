@@ -520,7 +520,7 @@ export const CreateProjectWithMedia = [
               },
               {
                 url: converted.publicUrl(),
-                name: 'convertedAudio.webm',
+                name: `${projectName}Audio.webm`,
                 type: 'audio/webm',
                 createdAt: new Date(),
                 converted: true,
