@@ -8,13 +8,15 @@ import { useHistory } from 'react-router-dom';
 import { DropZone } from '../components/DropZone';
 import UserHeader from '../components/UserHeader';
 import useProject from '../hooks/useProject';
+import useTranscription from '../hooks/useTranscription';
 import MediaInfoModal from '../components/MediaInfoModal';
 import OverlayToolTip from '../components/OverlayToolTip';
 import useStore from '../store';
 
 // import WaveSurfer from 'wavesurfer.js';
-
 import './currentProject.css';
+
+let mediaLength = 0;
 
 function CurrentProject() {
   const history = useHistory();
@@ -26,9 +28,12 @@ function CurrentProject() {
   const [oldTS, setOldTS] = useState('');
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
+  const [rawJson, setRawJson] = useState(null);
+  const [transcribing, setTranscribing] = useState(false);
   // const [waveSurfer, setWaveSurfer] = useState(null);
   const [files, setFiles] = useState([]);
   const { saveTranscription } = useProject();
+  const { createTranscription } = useTranscription();
 
   ///wave surfer
   // useEffect(() => {
@@ -41,7 +46,13 @@ function CurrentProject() {
 
   useEffect(() => {
     if (currentProject) {
-      if (currentProject.files) setFiles(currentProject.files.media);
+      if (currentProject.files) {
+        if (currentProject.files.json !== {}) {
+          setRawJson(currentProject.files.json);
+        }
+        mediaLength = currentProject.files.media.length;
+        setFiles(currentProject.files.media);
+      }
     }
   }, [currentProject]);
 
@@ -119,6 +130,22 @@ function CurrentProject() {
     toast.warn('Undo', {
       autoClose: 1500,
     });
+  };
+
+  const transcribe = async () => {
+    setTranscribing(true);
+    await toast.promise(
+      createTranscription(
+        currentProject.projectName,
+        files.filter((x) => x.type.includes('audio'))[0].name
+      ),
+      {
+        success: 'Created Transcription',
+        error: 'Failed to create transcription',
+        pending: 'Transcribing ...',
+      }
+    );
+    setTranscribing(false);
   };
 
   return (
@@ -256,6 +283,37 @@ function CurrentProject() {
                   flexDirection: 'column',
                 }}
               >
+                <div>
+                  {rawJson ? (
+                    <>
+                      <pre style={{ margin: 0, color: 'green' }}>
+                        transcribed
+                      </pre>
+                    </>
+                  ) : mediaLength > 0 ? (
+                    <>
+                      {transcribing ? (
+                        <pre>Transcribing ...</pre>
+                      ) : (
+                        <>
+                          <pre style={{ margin: 0, color: 'red' }}>
+                            not transcribed
+                          </pre>
+                          <pre
+                            style={{
+                              margin: 0,
+                              cursor: 'pointer',
+                              textDecoration: 'underline',
+                            }}
+                            onClick={transcribe}
+                          >
+                            transcribe now
+                          </pre>
+                        </>
+                      )}
+                    </>
+                  ) : null}
+                </div>
                 <pre className='text-warning'>
                   {' '}
                   {oldTS !== transcription && 'unsaved changes.'}

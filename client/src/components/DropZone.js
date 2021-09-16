@@ -10,12 +10,12 @@ export function DropZone({ id, ...props }) {
   const onDrop = useCallback(
     async (acceptedFiles) => {
       setLoading(true);
-      console.log(acceptedFiles);
 
       if (acceptedFiles.length === 0) {
         setLoading(false);
-        toast.error('Please make sure file is of MP3 or MP4 format.');
-        return toast.error('Please select a single file!');
+        return toast.error(
+          'Please make sure file is of WebM or MP4 format and please select a single file!'
+        );
       }
 
       const media = new FormData();
@@ -35,7 +35,7 @@ export function DropZone({ id, ...props }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: 'audio/mpeg, video/mp4',
+    accept: 'audio/webm, video/mp4',
     maxFiles: 1,
   });
 
@@ -59,7 +59,7 @@ export function DropZone({ id, ...props }) {
   return (
     <div {...getRootProps()} {...props}>
       <pre style={{ color: 'red' }}>
-        Accepted file formats are: MP3 for audio and MP4 for video.
+        Accepted file formats are: WebM for audio and MP4/WebM for video.
       </pre>
       <FaFileAudio size='2em' />
       <FaFileVideo size='2em' />

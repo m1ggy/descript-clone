@@ -81,7 +81,7 @@ export const createTranscription = async (req, res) => {
 
     console.log('transcription complete');
 
-    const transcriptionLocalPath = `${__dirname}/temp/${projectName}-transcription.json`;
+    const transcriptionLocalPath = `${__dirname}/temp/${user}-${projectName}-transcription.json`;
 
     await fs.promises.writeFile(
       transcriptionLocalPath,
@@ -113,31 +113,15 @@ export const createTranscription = async (req, res) => {
       url: transcription.publicUrl(),
       createdAt: new Date(),
     };
-    currentProject.save().then((doc) => {
-      console.log(doc);
-    });
+    const modifiedDoc = await currentProject.save();
+    console.log(modifiedDoc);
     console.log('added to db');
-    // response.results.forEach((result) => {
-    //   console.log(`Transcription: ${result.alternatives[0].transcript}`);
-    //   result.alternatives[0].words.forEach((wordInfo) => {
-    //     // NOTE: If you have a time offset exceeding 2^32 seconds, use the
-    //     // wordInfo.{x}Time.seconds.high to calculate seconds.
-    //     const startSecs =
-    //       `${wordInfo.startTime.seconds}` +
-    //       '.' +
-    //       wordInfo.startTime.nanos / 100000000;
-    //     const endSecs =
-    //       `${wordInfo.endTime.seconds}` +
-    //       '.' +
-    //       wordInfo.endTime.nanos / 100000000;
-    //     console.log(`Word: ${wordInfo.word}`);
-    //     console.log(`\t ${startSecs} secs - ${endSecs} secs`);
-    //   });
-    // });
 
     await fs.promises.unlink(transcriptionLocalPath);
     console.log('deleted local file');
-    return res.status(200).json({ message: 'create transcription post' });
+    return res
+      .status(200)
+      .json({ message: 'create transcription post', id: currentProject._id });
   } catch (e) {
     console.log(e);
   }

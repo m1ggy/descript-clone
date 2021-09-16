@@ -318,6 +318,13 @@ export const deleteMediaProject = async (req, res) => {
 
     const currentProject = await projectModel.findById(id).exec();
 
+    ///if the media is transcribed, delete the transcription as well
+    if (currentProject.transcribed === true) {
+      currentProject.files.json = {};
+      currentProject.transcribed = false;
+      await currentProject.save();
+    }
+
     if (converted === false) {
       try {
         //delete file from storage, project collection and user collection
