@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Col, Row, Button, ListGroup, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
@@ -19,11 +19,10 @@ import useProject from '../hooks/useProject';
 import useTranscription from '../hooks/useTranscription';
 import MediaInfoModal from '../components/MediaInfoModal';
 import OverlayToolTip from '../components/OverlayToolTip';
+import WaveSurfer from '../components/WaveSurfer';
 import useStore from '../store';
 
-// import WaveSurfer from 'wavesurfer.js';
 import './currentProject.css';
-import TranscriptionWord from '../components/TranscriptionWord';
 
 let mediaLength = 0;
 
@@ -40,20 +39,14 @@ function CurrentProject() {
   const [rawJson, setRawJson] = useState(null);
   const [parsedJson, setParsedJson] = useState(null);
   const [transcribing, setTranscribing] = useState(false);
-  // const [waveSurfer, setWaveSurfer] = useState(null);
+  const [playbackTime, setPlaybackTime] = useState();
+  const [duration, setDuration] = useState(0);
+  const [destroy, setDestroy] = useState(false);
+
   const [files, setFiles] = useState([]);
   const [transcriptionLoading, setTranscriptionLoading] = useState(false);
   const { saveTranscription } = useProject();
   const { createTranscription } = useTranscription();
-
-  ///wave surfer
-  // useEffect(() => {
-  //   setWaveSurfer(
-  //     WaveSurfer.create({
-  //       container: '#waveform',
-  //     })
-  //   );
-  // }, []);
 
   useEffect(() => {
     if (currentProject) {
@@ -99,29 +92,16 @@ function CurrentProject() {
     //eslint-disable-next-line
   }, []);
 
-  // useEffect(() => {
-  //   if (waveSurfer) {
-  //     // waveSurfer.load(
-  //     //   'https://storage.googleapis.com/project-files-dc/test/test1/[BTCLOD.COM]%20Chill%20Type%20Beat%20_Missing%20You_%20_%20Mellow%20Chill%20Type%20Beat%202020-320k.mp3'
-  //     // );
+  useEffect(() => {
+    console.log(playbackTime);
+  }, [playbackTime]);
 
-  //     waveSurfer.on('ready', () => {
-  //       console.log('audio ready');
-  //       toast.success('Player ready', {
-  //         theme: 'success',
-  //         autoClose: 2000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //         bodyStyle: {
-  //           color: 'black',
-  //         },
-  //       });
-  //     });
-  //   }
-  // }, [waveSurfer]);
+  const updatePlayback = useCallback(
+    (newTime) => {
+      setPlaybackTime(newTime);
+    },
+    [setPlaybackTime]
+  );
 
   const saveChanges = () => {
     setSaving(true);
@@ -179,6 +159,7 @@ function CurrentProject() {
               setCurrentProject({});
               setTranscription('');
               setOldTS('');
+              setDestroy(true);
             }}
             style={{
               width: 'fit-content',
@@ -435,20 +416,7 @@ function CurrentProject() {
                     </OverlayToolTip>
                   </div>
                 </Row>
-                <Row
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    width: '100%',
-                    flexDirection: 'row',
-                    maxHeight: '50vh',
-                    overflowY: 'scroll',
-                    paddingLeft: '20px',
-                    paddingBottom: '20px',
-                  }}
-                  className='border'
-                >
+                <Row className='border'>
                   {transcriptionLoading ? (
                     <div
                       style={{
@@ -462,22 +430,16 @@ function CurrentProject() {
                       <Spinner animation='border' variant='info' size='sm' />
                     </div>
                   ) : (
-                    parsedJson &&
-                    parsedJson.map((x) => {
-                      return (
-                        <>
-                          <div style={{ height: '25px' }} />
-                          {x.words.map((word, i) => {
-                            return (
-                              <>
-                                <TranscriptionWord word={word} key={word + i} />
-                                &nbsp;
-                              </>
-                            );
-                          })}
-                        </>
-                      );
-                    })
+                    files && (
+                      <WaveSurfer
+                        link={files}
+                        setPlaybackTime={updatePlayback}
+                        setDuration={setDuration}
+                        duration={duration}
+                        parsedJson={parsedJson}
+                        destroy={destroy}
+                      />
+                    )
                   )}
                 </Row>
               </Col>
@@ -502,8 +464,6 @@ function CurrentProject() {
             <Row></Row>
           </Col>
         </Row>
-
-        <div id='waveform'></div>
       </Col>
       <Col lg={2} xs={0}></Col>
     </Row>

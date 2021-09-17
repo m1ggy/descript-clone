@@ -10,7 +10,10 @@ import { authorize } from './utils.js';
 dotenv.config();
 
 mongoose.connect(process.env.DB_URI, (error) => {
-  if (error) return console.error(error);
+  if (error) {
+    console.error('failed to start server');
+    process.exit(0);
+  }
   console.log('connected to mongodb!');
   const app = express();
 

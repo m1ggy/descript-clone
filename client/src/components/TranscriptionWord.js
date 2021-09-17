@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { FiEdit3 } from 'react-icons/fi';
 import { VscReplaceAll } from 'react-icons/vsc';
@@ -7,11 +7,20 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import './transcriptionword.css';
 
 function TranscriptionWord({
-  word = { word: '', startTime: {}, endTime: {} },
-  playbackTime,
+  word = {
+    word: '',
+    startTime: { seconds: '', nanos: '' },
+    endTime: { seconds: '', nanos: '' },
+  },
+  progress,
+  waveSurfer,
 }) {
   const [open, setOpen] = useState(false);
-  const wordRef = useRef();
+
+  useEffect(() => {
+    console.log(progress);
+  }, [progress]);
+
   const popover = (
     <Popover style={{ width: '250px' }}>
       <Popover.Header as='h3'>{word.word}</Popover.Header>
@@ -64,11 +73,14 @@ function TranscriptionWord({
         trigger='click'
         placement='top'
         overlay={popover}
-        onEnter={() => setOpen(true)}
+        onEnter={() => {
+          setOpen(true);
+        }}
         onExit={() => setOpen(false)}
         rootClose
       >
         <div
+          className='border word'
           style={{
             cursor: 'pointer',
             margin: 0,
@@ -76,15 +88,34 @@ function TranscriptionWord({
             justifyContent: 'center',
             alignItems: 'center',
             width: 'fit-content',
-            backgroundColor: open ? '#d2ebf5' : null,
             height: '40px',
+            backgroundColor: open
+              ? '#1f9bcf'
+              : null || progress
+              ? '#b5e4c5'
+              : null,
+            color: open ? 'white' : 'black',
           }}
-          className='border'
-          ref={wordRef}
         >
-          <div style={{ maxHeight: '50%' }}>
+          <div>
             <p style={{ userSelect: 'none' }}>{word.word}</p>
           </div>
+          {/* <div>
+            {progress && (
+              <>
+                {' '}
+                <small>
+                  {word.startTime.seconds && word.startTime.seconds}.
+                  {word.startTime.nanos && word.startTime.nanos / 100000000}s
+                </small>{' '}
+                to{' '}
+                <small>
+                  {word.endTime.seconds && word.endTime.seconds}.
+                  {word.endTime.nanos && word.endTime.nanos / 100000000}s
+                </small>
+              </>
+            )}
+          </div> */}
         </div>
       </OverlayTrigger>
     </>
