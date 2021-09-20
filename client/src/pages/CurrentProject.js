@@ -152,19 +152,23 @@ function CurrentProject() {
                   >
                     <h6>Main Transcription</h6>
                   </ListGroup.Item>
-                  <ListGroup.Item
-                    action
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                    }}
-                    onClick={() => {
-                      setSelectedMedia(currentProject.files.transcription);
-                      setShowMedia(true);
-                    }}
-                  >
-                    Transcription File
-                  </ListGroup.Item>
+                  {currentProject.files?.json && (
+                    <ListGroup.Item
+                      action
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                      onClick={() => {
+                        setSelectedMedia(
+                          currentProject.files.json && currentProject.files.json
+                        );
+                        setShowMedia(true);
+                      }}
+                    >
+                      Transcription File
+                    </ListGroup.Item>
+                  )}
                 </ListGroup>
               </Row>
               <Row>

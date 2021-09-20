@@ -64,17 +64,21 @@ function WaveSurfer({ link, parsedJson, destroy }) {
       waveSurfer.on('audioprocess', (progress) => {
         const shorterProgress = progress.toFixed(1);
 
-        if (parseInt(shorterProgress) === parseInt(playbackTime.toFixed(1))) {
+        if (shorterProgress === playbackTime.toFixed(1)) {
           return;
         } else {
           setPlaybackTime(progress);
         }
       });
-      waveSurfer.on('seek', (progress) => {
-        const shorterProgress = progress.toFixed(1);
-        setPlaybackTime(waveSurfer.getDuration() * shorterProgress);
-      });
     }
+
+    return () => {
+      if (waveSurfer) {
+        waveSurfer.un('ready', () => {
+          console.log('unsubbed');
+        });
+      }
+    };
   }, [waveSurfer, playbackTime]);
 
   const getMinutes = (time) => {

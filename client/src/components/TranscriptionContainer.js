@@ -16,14 +16,15 @@ function TranscriptionContainer({ parsedJson, waveSurfer, playbackTime }) {
     );
   };
 
-  function checkActiveWord(word) {
-    return playbackTime >= startTimeFloat(word) &&
-      playbackTime <= endTimeFloat(word)
-      ? true
-      : null;
-  }
-
-  const wordActive = useCallback(checkActiveWord, [playbackTime]);
+  const wordActive = useCallback(
+    function checkActiveWord(word) {
+      return playbackTime >= startTimeFloat(word) &&
+        playbackTime <= endTimeFloat(word)
+        ? true
+        : null;
+    },
+    [playbackTime]
+  );
 
   return (
     parsedJson &&
