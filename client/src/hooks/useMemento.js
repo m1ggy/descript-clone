@@ -7,18 +7,28 @@ const useMemento = (stateName) => {
   const state = useStore((state) => state[`${stateName}`]);
   const [memento, setMemento] = useState(null);
 
+  /**
+   * rollback changes from state
+   */
   function undo() {
     const snapshot = undoSnapshots.pop();
     redoSnapshots.push(snapshot);
     setMemento(snapshot);
   }
 
+  /**
+   * redo previous undo
+   */
   function redo() {
     const snapshot = redoSnapshots.pop();
     undoSnapshots.push(snapshot);
     setMemento(snapshot);
   }
 
+  /**
+   * sets the memento to the given parameter
+   * @param {array} snapshot new snapshot from user
+   */
   function setNewMemento(snapshot) {
     undoSnapshots.push(memento);
     setMemento(snapshot);
