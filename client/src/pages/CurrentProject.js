@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
-  FaSave,
+  // FaSave,
   FaUndo,
   FaArrowLeft,
   FaFileExport,
@@ -15,7 +15,7 @@ import { CgTranscript } from 'react-icons/cg';
 
 import { DropZone } from '../components/DropZone';
 import UserHeader from '../components/UserHeader';
-import useProject from '../hooks/useProject';
+
 import useTranscription from '../hooks/useTranscription';
 import MediaInfoModal from '../components/MediaInfoModal';
 import OverlayToolTip from '../components/OverlayToolTip';
@@ -31,9 +31,7 @@ function CurrentProject() {
 
   const [selectedMedia, setSelectedMedia] = useState({});
   const [showMedia, setShowMedia] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [transcription, setTranscription] = useState('');
-  const [oldTS, setOldTS] = useState('');
+  // const [saving, setSaving] = useState(false);
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
   const [rawJson, setRawJson] = useState(null);
@@ -44,7 +42,7 @@ function CurrentProject() {
 
   const [files, setFiles] = useState([]);
   const [transcriptionLoading, setTranscriptionLoading] = useState(false);
-  const { saveTranscription } = useProject();
+
   const { createTranscription } = useTranscription();
 
   useEffect(() => {
@@ -71,7 +69,6 @@ function CurrentProject() {
         data.forEach((paragraphs) => {
           temp.push(paragraphs.alternatives[0]);
         });
-        console.log(temp);
 
         return setParsedJson(temp);
       }
@@ -90,25 +87,6 @@ function CurrentProject() {
     }
     //eslint-disable-next-line
   }, []);
-
-  const saveChanges = () => {
-    setSaving(true);
-    toast
-      .promise(saveTranscription(currentProject._id, transcription), {
-        pending: 'Saving changes ....',
-        success: 'Changes saved.',
-        rejection: 'Failed to save changes.',
-      })
-      .then(() => {
-        setSaving(false);
-      });
-  };
-  const undoChanges = () => {
-    setTranscription(oldTS);
-    toast.warn('Undo', {
-      autoClose: 1500,
-    });
-  };
 
   const transcribe = async () => {
     setTranscribing(true);
@@ -145,8 +123,6 @@ function CurrentProject() {
             onClick={() => {
               history.goBack();
               setCurrentProject({});
-              setTranscription('');
-              setOldTS('');
               setDestroy(true);
             }}
             style={{
@@ -238,16 +214,10 @@ function CurrentProject() {
                   e.preventDefault();
                 }
 
-                if (e.ctrlKey && e.key === 's' && oldTS !== transcription) {
+                if (e.ctrlKey && e.key === 's') {
                   e.preventDefault();
-                  saveChanges();
-                } else if (
-                  e.ctrlKey &&
-                  e.key === 'z' &&
-                  oldTS !== transcription
-                ) {
+                } else if (e.ctrlKey && e.key === 'z') {
                   e.preventDefault();
-                  undoChanges();
                 }
               }}
             >
@@ -294,10 +264,6 @@ function CurrentProject() {
                       </>
                     ) : null}
                   </div>
-                  <pre className='text-warning'>
-                    {' '}
-                    {oldTS !== transcription && 'unsaved changes.'}
-                  </pre>
 
                   <div
                     style={{
@@ -329,12 +295,11 @@ function CurrentProject() {
                           variant='success'
                           style={{
                             width: 'fit-content',
-                            pointerEvents: oldTS === transcription && 'none',
+                            pointerEvents: 'none',
                           }}
-                          onClick={saveChanges}
-                          disabled={oldTS === transcription || saving}
+                          disabled={true}
                         >
-                          {saving ? (
+                          {/* {saving ? (
                             <Spinner animation='border' size='sm' />
                           ) : (
                             <>
@@ -344,7 +309,7 @@ function CurrentProject() {
                                 style={{ marginLeft: '3px' }}
                               />
                             </>
-                          )}
+                          )} */}
                         </Button>
                       </span>
                     </OverlayToolTip>
@@ -366,11 +331,10 @@ function CurrentProject() {
                           variant='warning'
                           style={{
                             width: 'fit-content',
-                            pointerEvents: oldTS === transcription && 'none',
+                            pointerEvents: 'none',
                             marginLeft: '10px ',
                           }}
-                          onClick={undoChanges}
-                          disabled={oldTS === transcription || saving}
+                          disabled={true}
                         >
                           Undo{' '}
                           <FaUndo size='2em' style={{ marginLeft: '3px' }} />
@@ -393,6 +357,7 @@ function CurrentProject() {
                           }}
                           size='sm'
                           variant='info'
+                          disabled={true}
                         >
                           Export...{' '}
                           <FaFileExport

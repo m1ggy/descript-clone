@@ -4,6 +4,7 @@ import { createUserSlice } from './slices/userSlice';
 import { createProjectSlice } from './slices/projectSlice';
 import { createCurrentProjectSlice } from './slices/currentProjectSlice';
 import { createLoadingSlice } from './slices/loadingSlice';
+import { createMementoSlice } from './slices/mementoSlice';
 const useStore = create(
   persist(
     (set, get) => ({
@@ -11,6 +12,7 @@ const useStore = create(
       ...createProjectSlice(set, get),
       ...createCurrentProjectSlice(set, get),
       ...createLoadingSlice(set, get),
+      ...createMementoSlice(set, get),
     }),
     {
       name: 'userInfo',
