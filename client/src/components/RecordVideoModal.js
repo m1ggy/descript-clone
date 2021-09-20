@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form, Accordion } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import useRecorder from '../hooks/useRecorder';
 import CountDown from './CountDown';
 import OverlayToolTip from './OverlayToolTip';
@@ -55,13 +56,21 @@ function RecordVideoModal({ show, setShow }) {
       const media = new FormData();
       media.append('media', currentBlob, `${projectName}.webm`);
       media.append('projectName', projectName);
-      await createProjectWithMedia(media);
+      await toast.promise(createProjectWithMedia(media), {
+        success: 'Created new project.',
+        pending: 'Uploading and Converting Video File....',
+        error: 'Failed to upload video file.',
+      });
     } catch (e) {
       console.log(e);
     }
 
     try {
-      await getProjects();
+      await toast.promise(getProjects(), {
+        success: 'Fetched projects.',
+        pending: 'fetching updated project list....',
+        error: 'Failed to fetch project list.',
+      });
     } catch (e) {
       console.log(e);
     }
@@ -273,7 +282,6 @@ function RecordVideoModal({ show, setShow }) {
             )}
           </>
         )}
-        <Form></Form>
       </Modal.Body>
 
       <Modal.Footer>

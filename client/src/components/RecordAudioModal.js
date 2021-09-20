@@ -45,7 +45,7 @@ function RecordAudioModal({ show, setShow }) {
 
       await toast.promise(createProjectWithMedia(media), {
         success: 'Created project.',
-        pending: 'Creating project...',
+        pending: 'Uploading audio file and creating project...',
         error: 'Failed to create project.',
       });
     } catch (e) {

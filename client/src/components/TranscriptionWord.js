@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { FiEdit3 } from 'react-icons/fi';
 import { VscReplaceAll } from 'react-icons/vsc';
@@ -13,13 +13,9 @@ function TranscriptionWord({
     endTime: { seconds: '', nanos: '' },
   },
   progress,
-  waveSurfer,
+  className,
 }) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    console.log(progress);
-  }, [progress]);
 
   const popover = (
     <Popover style={{ width: '250px' }}>
@@ -80,24 +76,25 @@ function TranscriptionWord({
         rootClose
       >
         <div
-          className='border word'
+          className={`word ${progress(word) && className}`}
           style={{
             cursor: 'pointer',
             margin: 0,
-            display: 'flex',
+            padding: '5px',
+            display: 'inline-flex',
             justifyContent: 'center',
             alignItems: 'center',
             width: 'fit-content',
             height: '40px',
             backgroundColor: open
               ? '#1f9bcf'
-              : null || progress
+              : null || progress(word)
               ? '#b5e4c5'
               : null,
             color: open ? 'white' : 'black',
           }}
         >
-          <div>
+          <div style={{ maxHeight: '75%' }}>
             <p style={{ userSelect: 'none' }}>{word.word}</p>
           </div>
           {/* <div>
@@ -122,4 +119,4 @@ function TranscriptionWord({
   );
 }
 
-export default TranscriptionWord;
+export default React.memo(TranscriptionWord);

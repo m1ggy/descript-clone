@@ -1,4 +1,18 @@
 .wavesurfer-button {
   margin: 5px;
   padding: 0;
+  height: fit-content;
+}
+
+.ts-word {
+  animation: enlarge alternate 150ms ease;
+}
+
+@keyframes enlarge {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1.05);
+  }
 }

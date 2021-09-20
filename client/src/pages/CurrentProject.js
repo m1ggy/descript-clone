@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Col, Row, Button, ListGroup, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
@@ -39,8 +39,7 @@ function CurrentProject() {
   const [rawJson, setRawJson] = useState(null);
   const [parsedJson, setParsedJson] = useState(null);
   const [transcribing, setTranscribing] = useState(false);
-  const [playbackTime, setPlaybackTime] = useState();
-  const [duration, setDuration] = useState(0);
+
   const [destroy, setDestroy] = useState(false);
 
   const [files, setFiles] = useState([]);
@@ -91,17 +90,6 @@ function CurrentProject() {
     }
     //eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    console.log(playbackTime);
-  }, [playbackTime]);
-
-  const updatePlayback = useCallback(
-    (newTime) => {
-      setPlaybackTime(newTime);
-    },
-    [setPlaybackTime]
-  );
 
   const saveChanges = () => {
     setSaving(true);
@@ -416,7 +404,7 @@ function CurrentProject() {
                     </OverlayToolTip>
                   </div>
                 </Row>
-                <Row className='border'>
+                <Row>
                   {transcriptionLoading ? (
                     <div
                       style={{
@@ -433,9 +421,6 @@ function CurrentProject() {
                     files && (
                       <WaveSurfer
                         link={files}
-                        setPlaybackTime={updatePlayback}
-                        setDuration={setDuration}
-                        duration={duration}
                         parsedJson={parsedJson}
                         destroy={destroy}
                       />

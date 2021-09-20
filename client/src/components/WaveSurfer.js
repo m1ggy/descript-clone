@@ -1,27 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import ws from 'wavesurfer.js';
-import { Button, Spinner } from 'react-bootstrap';
-import TranscriptionWord from './TranscriptionWord';
+import { Spinner } from 'react-bootstrap';
+
 import './wavesurfer.css';
+import WSControls from './WSControls';
+import TranscriptionContainer from './TranscriptionContainer';
+
 function WaveSurfer({ link, parsedJson, destroy }) {
   const [waveSurfer, setWaveSurfer] = useState(null);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
-
-  const startTimeFloat = useCallback((word) => {
-    return parseFloat(
-      `${(word.startTime.seconds && word.startTime.seconds) || 0}.${
-        (word.startTime.nanos && word.startTime.nanos / 100000000) || 0
-      }`
-    );
-  }, []);
-  const endTimeFloat = useCallback((word) => {
-    return parseFloat(
-      `${(word.endTime.seconds && word.endTime.seconds) || 0}.${
-        (word.endTime.nanos && word.endTime.nanos / 100000000) || 0
-      }`
-    );
-  }, []);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   ///wave surfer
   useEffect(() => {
@@ -36,14 +25,17 @@ function WaveSurfer({ link, parsedJson, destroy }) {
         barWidth: 2,
         normalize: true,
         barGap: 1,
-        progressColor: '#040a45',
-        waveColor: 'gray',
+        progressColor: 'gray',
+        waveColor: '#040a45',
+        backend: 'MediaElement',
       })
     );
   }, []);
 
   useEffect(() => {
     if (destroy && waveSurfer) {
+      delete waveSurfer.backend.buffer;
+      waveSurfer.unAll();
       waveSurfer.destroy();
       setPlayerReady(false);
     }
@@ -52,58 +44,50 @@ function WaveSurfer({ link, parsedJson, destroy }) {
   useEffect(() => {
     if (waveSurfer && link) {
       const [data] = link.filter((x) => x.type.includes('audio'));
-      console.log(data.url);
-      waveSurfer.load(data.url);
 
+      data ? waveSurfer.load(data.url) : setPlayerReady(true);
+    }
+  }, [waveSurfer, link]);
+
+  useEffect(() => {
+    if (waveSurfer != null) {
       waveSurfer.on('ready', () => {
         setPlayerReady(true);
       });
+      waveSurfer.on('play', () => {
+        setIsPlaying(true);
+      });
+      waveSurfer.on('pause', () => {
+        setIsPlaying(false);
+      });
 
       waveSurfer.on('audioprocess', (progress) => {
-        setPlaybackTime(progress);
+        const shorterProgress = progress.toFixed(1);
+
+        if (parseInt(shorterProgress) === parseInt(playbackTime.toFixed(1))) {
+          return;
+        } else {
+          setPlaybackTime(progress);
+        }
       });
       waveSurfer.on('seek', (progress) => {
-        console.log(progress);
-        setPlaybackTime(waveSurfer.getDuration() * progress);
+        const shorterProgress = progress.toFixed(1);
+        setPlaybackTime(waveSurfer.getDuration() * shorterProgress);
       });
     }
-  }, [waveSurfer, link]);
+  }, [waveSurfer, playbackTime]);
 
   const getMinutes = (time) => {
     return Math.floor(time / 60);
   };
   const getSeconds = (time) => {
-    return time > 60 ? (time % 60).toFixed(2) : time.toFixed(2);
+    return time > 60 ? (time % 60).toFixed(1) : time.toFixed(1);
   };
 
   return (
     <>
       {waveSurfer && playerReady ? (
-        <div style={{ display: 'inline-flex' }}>
-          <Button
-            variant='outline-success'
-            onClick={() => waveSurfer.play()}
-            size='sm'
-            className='wavesurfer-button'
-          >
-            Play
-          </Button>
-          <Button
-            variant='outline-warning'
-            onClick={() => waveSurfer.pause()}
-            size='sm'
-            className='wavesurfer-button'
-          >
-            Pause
-          </Button>
-          <Button
-            variant='outline-danger'
-            onClick={() => waveSurfer.stop()}
-            size='sm'
-            className='wavesurfer-button'
-          >
-            Stop
-          </Button>
+        <WSControls waveSurfer={waveSurfer} isPlaying={isPlaying}>
           <div
             style={{
               display: 'flex',
@@ -112,7 +96,6 @@ function WaveSurfer({ link, parsedJson, destroy }) {
               marginLeft: '25px',
               flexDirection: 'column',
             }}
-            className='border'
           >
             <pre style={{ margin: 0 }}>Playback/Duration</pre>
 
@@ -122,7 +105,7 @@ function WaveSurfer({ link, parsedJson, destroy }) {
               {waveSurfer && getSeconds(waveSurfer.getDuration())}s
             </pre>
           </div>
-        </div>
+        </WSControls>
       ) : (
         <div
           style={{
@@ -138,30 +121,12 @@ function WaveSurfer({ link, parsedJson, destroy }) {
         </div>
       )}
       <div id='waveform'></div>
-      {parsedJson &&
-        waveSurfer &&
-        parsedJson.map((x, i) => {
-          return (
-            <React.Fragment key={i}>
-              <div style={{ height: '25px' }} />
-              {x.words.map((word, i) => {
-                return (
-                  <TranscriptionWord
-                    word={word}
-                    key={i}
-                    progress={
-                      playbackTime >= startTimeFloat(word) &&
-                      playbackTime <= endTimeFloat(word)
-                        ? true
-                        : null
-                    }
-                    waveSurfer={waveSurfer}
-                  />
-                );
-              })}
-            </React.Fragment>
-          );
-        })}
+
+      <TranscriptionContainer
+        parsedJson={parsedJson}
+        playbackTime={playbackTime}
+        waveSurfer={waveSurfer}
+      />
     </>
   );
 }
