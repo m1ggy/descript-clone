@@ -51,18 +51,9 @@ export const createProject = async (req, res) => {
   if (projectName == null)
     return res.send(404).json({ message: 'project name is not provided.' });
 
-  //common path
-  const path = `${__dirname}/temp/${projectName}.txt`;
-
   ///create local directory
   fs.promises.mkdir(`${__dirname}/temp/`, { recursive: true }, (err) => {
     if (err) throw err;
-  });
-
-  ///create local text file
-  fs.writeFile(path, '', (err) => {
-    if (err) return res.status(400).json({ message: 'An error occurred', err });
-    console.log('created text file');
   });
 
   try {
@@ -74,69 +65,38 @@ export const createProject = async (req, res) => {
     return res.status(404).json({ message: 'An error occurred', e });
   }
 
-  const destination = `${user}/${projectName}/${projectName}.txt`;
+  ///add project to user directory
+  ///add to new project to db
+  try {
+    ///create new project for the db
+    const newProject = new projectModel({
+      projectName,
+      files: {
+        media: [],
+      },
+      owner: user,
+    });
+    await newProject.save();
+    ///add new project to user
 
-  const newFile = projectBucket.file(destination);
+    const project = await projectModel.findOne({ projectName }).exec();
 
-  const exists = await newFile.exists().catch((e) => {
-    if (e)
-      return res
-        .status(400)
-        .json({ message: 'File already exists on the storage' });
-  });
-
-  if (exists[0] === false) {
-    ///add project to user directory
-    await projectBucket
-      .upload(path, {
-        destination,
-        metadata: {
-          cacheControl: 'private, max-age=0, no-transform',
-        },
-      })
-      .catch(console.error);
-    console.log(`Uploaded file ${projectName}.txt`);
-
-    ///add to new project to db
-    try {
-      ///create new project for the db
-      const newProject = new projectModel({
-        projectName,
-        files: {
-          transcription: { link: newFile.publicUrl(), createdAt: new Date() },
-          media: [],
-        },
-        owner: user,
-      });
-      await newProject.save();
-      ///add new project to user
-
-      const project = await projectModel.findOne({ projectName }).exec();
-
-      await userModel
-        .findOneAndUpdate(
-          { username: user },
-          {
-            $push: {
-              projects: { projectName, createdAt: new Date(), id: project._id },
-            },
-          }
-        )
-        .exec();
-      console.log('added project to DB');
-    } catch (e) {
-      console.error(e);
-    }
-
-    res.status(200).json({ message: 'created new project' });
-  } else {
-    res.status(400).json({ message: 'Project already exist.' });
+    await userModel
+      .findOneAndUpdate(
+        { username: user },
+        {
+          $push: {
+            projects: { projectName, createdAt: new Date(), id: project._id },
+          },
+        }
+      )
+      .exec();
+    console.log('added project to DB');
+  } catch (e) {
+    console.error(e);
   }
-  ///delete temp file
-  fs.unlink(path, (err) => {
-    if (err) return console.log(err);
-    console.log('deleted temp file');
-  });
+
+  res.status(200).json({ message: 'created new project' });
 };
 
 export const checkProject = async (req, res) => {
