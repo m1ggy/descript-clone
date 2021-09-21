@@ -400,10 +400,10 @@ export const CreateProjectWithMedia = [
       return res.status(404).json({ message: 'project info is not provided.' });
 
     //common path
-
     const mediaPath = file.path;
 
     ///paths for GCS files
+
     const mediaDestination = `${user}/${projectName}/${file.originalname}`;
 
     ///if there is a converted audio, create a new destination for GCS
@@ -412,6 +412,7 @@ export const CreateProjectWithMedia = [
     }
 
     ///paths for local temp file to GCS
+
     const media = projectBucket.file(mediaDestination);
     if (convertedDestination)
       converted = projectBucket.file(convertedDestination);
@@ -420,7 +421,7 @@ export const CreateProjectWithMedia = [
       return res.status(400).json({ message: 'project already exists' });
 
     try {
-      console.log(`Uploaded file ${text.name}`);
+      ////upload files to GCS
       await projectBucket.upload(mediaPath, {
         destination: mediaDestination,
         metadata: {
