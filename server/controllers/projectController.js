@@ -338,35 +338,29 @@ export const updateTransciption = async (req, res) => {
 
   try {
     const currentProject = await projectModel.findById(id).exec();
+    const path = `${user}/${currentProject.projectName}/transcription.json`;
+    const localPath = `${__dirname}/temp/${user}-${currentProject.projectName}-new-transcription.json`;
+    const newJson = JSON.stringify(transcription);
 
-    const path = `${user}/${currentProject.projectName}/${currentProject.projectName}.txt`;
-    const localPath = `${__dirname}/temp/${currentProject.projectName}.txt`;
+    console.log('creating local file ....');
+    await fs.promises.writeFile(localPath, newJson);
 
-    const currentFile = projectBucket.file(path);
+    console.log('created local file, deleting exist file from GC Storage');
+    const oldJson = projectBucket.file(path);
+    await oldJson.delete();
 
-    ///create local text file
-    await fs.promises.writeFile(localPath, transcription);
+    console.log('deleted file in GC Storage, uploading new File');
 
-    ///upload new file
     await projectBucket.upload(localPath, {
       destination: path,
       metadata: {
         cacheControl: 'private, max-age=0, no-transform',
       },
     });
-
-    ///update db
-    currentProject.files.transcription = {
-      ...currentProject.files.transcription,
-      link: currentFile.publicUrl(),
-      updatedAt: new Date(),
-    };
-
-    await currentProject.save();
-
-    ///delete local temp file
+    console.log('Uploaded new file, deleting local temp file');
     await fs.promises.unlink(localPath);
-
+    console.log('delete local file');
+    console.log('Update successful');
     return res.status(200).json({ message: 'Updated transcription' });
   } catch (e) {
     return res.status(404).json({ message: 'Failed to update project', e });

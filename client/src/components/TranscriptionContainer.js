@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import TranscriptionWord from './TranscriptionWord';
+// import useMemento from '../hooks/useMemento';
+import useStore from '../store';
 function TranscriptionContainer({
-  parsedJson,
-  waveSurfer,
   playbackTime,
   setSelectedWord,
   setShow,
+  rerender,
 }) {
+  const memento = useStore((state) => state.memento);
+
   const startTimeFloat = (word) => {
     return parseFloat(
       `${(word.startTime.seconds && word.startTime.seconds) || 0}.${
@@ -33,11 +36,11 @@ function TranscriptionContainer({
   );
 
   return (
-    parsedJson &&
-    parsedJson.map((x, i) => {
+    memento &&
+    memento.map((x, p) => {
       return (
         <div
-          key={i}
+          key={p}
           className='border'
           style={{
             padding: 0,
@@ -53,6 +56,9 @@ function TranscriptionContainer({
                 className='ts-word'
                 select={setSelectedWord}
                 setShow={setShow}
+                pIndex={p}
+                wIndex={i}
+                rerender={rerender}
               />
             );
           })}

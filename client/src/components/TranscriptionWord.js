@@ -16,14 +16,18 @@ function TranscriptionWord({
   className,
   select,
   setShow,
+  pIndex,
+  wIndex,
 }) {
   const [open, setOpen] = useState(false);
 
-  const onSelectOption = (title, type, word) => {
+  const onSelectOption = (title, type, word, pIndex, wIndex) => {
     select({
       word,
       title,
       type,
+      pIndex,
+      wIndex,
     });
     setShow(true);
     setOpen(false);
@@ -40,7 +44,7 @@ function TranscriptionWord({
               <pre
                 className='text-info option-item'
                 onClick={() => {
-                  onSelectOption('Edit Text', 'editText', word);
+                  onSelectOption('Edit Text', 'editText', word, pIndex, wIndex);
                 }}
               >
                 Edit Text <FiEdit3 />
@@ -98,6 +102,11 @@ function TranscriptionWord({
         rootClose
         show={open}
         onToggle={() => setOpen(false)}
+        popperConfig={{
+          modifiers: [
+            { name: 'applyStyles', fn: () => {}, phase: 'read', enabled: true },
+          ],
+        }}
       >
         <div
           className={`word ${progress(word) && className}`}

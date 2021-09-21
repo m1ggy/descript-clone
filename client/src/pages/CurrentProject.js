@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Col, Row, Button, ListGroup, Spinner } from 'react-bootstrap';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   FaSave,
@@ -22,31 +21,38 @@ import MediaInfoModal from '../components/MediaInfoModal';
 import OverlayToolTip from '../components/OverlayToolTip';
 import WaveSurfer from '../components/WaveSurfer';
 import useStore from '../store';
-
+import useMemento from '../hooks/useMemento';
 import './currentProject.css';
+import useProject from '../hooks/useProject';
 
 let mediaLength = 0;
-
+let mementoSelector = (state) => state.memento;
 function CurrentProject() {
   const history = useHistory();
-
+  const { id } = useParams();
   const [selectedMedia, setSelectedMedia] = useState({});
   const [showMedia, setShowMedia] = useState(false);
   // const [saving, setSaving] = useState(false);
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
   const setTranscription = useStore((state) => state.setTranscription);
+  const clearTranscription = useStore((state) => state.clearTranscription);
+
   const [rawJson, setRawJson] = useState(null);
-  const [parsedJson, setParsedJson] = useState(null);
+
   const [transcribing, setTranscribing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [destroy, setDestroy] = useState(false);
 
   const [files, setFiles] = useState([]);
   const [transcriptionLoading, setTranscriptionLoading] = useState(false);
 
-  const { createTranscription } = useTranscription();
-
+  const { createTranscription, fetchTranscription } = useTranscription();
+  const { saveTranscription } = useProject();
+  const { flush, undo, redo, undoSnapshots, redoSnapshots } = useMemento();
+  const setMemento = useStore((state) => state.setMemento);
+  const memento = useStore(mementoSelector);
   useEffect(() => {
     if (currentProject) {
       if (currentProject.files) {
@@ -61,28 +67,19 @@ function CurrentProject() {
 
   ///fetch json data
   useEffect(() => {
+    console.log('fetched json');
     async function fetchJson() {
       setTranscriptionLoading(true);
-      let temp = [];
-      const { data } = await axios.get(rawJson.url);
-
+      setTranscription(await fetchTranscription(rawJson.url));
+      setMemento(await fetchTranscription(rawJson.url));
       setTranscriptionLoading(false);
-      if (data.length) {
-        data.forEach((paragraphs) => {
-          temp.push(paragraphs.alternatives[0]);
-        });
-
-        setTranscription(temp);
-        return setParsedJson(temp);
-      }
-
-      setParsedJson([]);
     }
 
     if (rawJson) {
       fetchJson();
     }
-  }, [rawJson, setTranscription]);
+    //eslint-disable-next-line
+  }, [rawJson]);
 
   useEffect(() => {
     if (currentProject) {
@@ -107,6 +104,16 @@ function CurrentProject() {
     setTranscribing(false);
   };
 
+  const saveTS = async (id) => {
+    console.log('current memento:', memento);
+    setSaving(true);
+    await toast.promise(saveTranscription(id, memento), {
+      success: 'Saved changes',
+      pending: 'Saving changes ...',
+      error: 'Failed to save changes',
+    });
+    setSaving(false);
+  };
   return (
     <Row>
       <Col lg={2} xs={0}></Col>
@@ -127,13 +134,15 @@ function CurrentProject() {
               history.goBack();
               setCurrentProject({});
               setDestroy(true);
+              flush();
+              clearTranscription();
             }}
             style={{
               width: 'fit-content',
               marginLeft: '35px',
               marginBottom: '25px',
             }}
-            disabled={transcribing}
+            disabled={transcribing || saving}
           >
             Go back <FaArrowLeft size='1.5em' style={{ marginLeft: '3px' }} />
           </Button>
@@ -220,11 +229,9 @@ function CurrentProject() {
               onKeyDown={(e) => {
                 if (e.ctrlKey && e.key === 's') {
                   e.preventDefault();
-                }
-
-                if (e.ctrlKey && e.key === 's') {
-                  e.preventDefault();
                 } else if (e.ctrlKey && e.key === 'z') {
+                  e.preventDefault();
+                } else if (e.ctrlKey && e.shiftKey && e.key === 'z') {
                   e.preventDefault();
                 }
               }}
@@ -303,9 +310,10 @@ function CurrentProject() {
                           variant='success'
                           style={{
                             width: 'fit-content',
-                            pointerEvents: 'none',
+                            // pointerEvents: 'none',
                           }}
-                          disabled={true}
+                          onClick={() => saveTS(id, memento)}
+                          disabled={saving}
                         >
                           <>
                             Save{' '}
@@ -332,10 +340,11 @@ function CurrentProject() {
                           variant='warning'
                           style={{
                             width: 'fit-content',
-                            pointerEvents: 'none',
+
                             marginLeft: '10px ',
                           }}
-                          disabled={true}
+                          disabled={undoSnapshots.length ? false : true}
+                          onClick={() => undo()}
                         >
                           Undo{' '}
                           <FaUndo size='2em' style={{ marginLeft: '3px' }} />
@@ -360,10 +369,11 @@ function CurrentProject() {
                           variant='warning'
                           style={{
                             width: 'fit-content',
-                            pointerEvents: 'none',
+
                             marginLeft: '10px ',
                           }}
-                          disabled={true}
+                          disabled={redoSnapshots.length ? false : true}
+                          onClick={redo}
                         >
                           Redo
                           <FaRedo size='2em' style={{ marginLeft: '3px' }} />
@@ -412,13 +422,7 @@ function CurrentProject() {
                       <Spinner animation='border' variant='info' size='sm' />
                     </div>
                   ) : (
-                    files && (
-                      <WaveSurfer
-                        link={files}
-                        parsedJson={parsedJson}
-                        destroy={destroy}
-                      />
-                    )
+                    files && <WaveSurfer link={files} destroy={destroy} />
                   )}
                 </Row>
               </Col>

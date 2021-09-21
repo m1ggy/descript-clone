@@ -1,24 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import useMemento from '../hooks/useMemento';
+import useStore from '../store';
+
 // import useStore from '../store';
 function ModifyWordModal({
   show = false,
   setShow = () => null,
   title = '',
   type = '',
-  word = { word: '' },
+  pIndex,
+  wIndex,
+  setRerender,
 }) {
   const onHide = () => setShow(false);
-  //   const [loading, setLoading] = useState(false);
   const [newWord, setNewWord] = useState('');
-  //   const transcription = useStore((state) => state.transcription);
+
+  const memento = useStore((state) => state.memento);
+  const getMemento = useStore((state) => state.getMemento);
+  const { setNewMemento } = useMemento();
+
   const handleEdit = (e) => {
     e.preventDefault();
-  };
 
-  useEffect(() => {
-    setNewWord(word.word);
-  }, [word.word]);
+    // let temp = getMemento();
+    // temp[pIndex].words[wIndex].word = newWord;
+
+    setNewMemento(pIndex, wIndex, newWord);
+    console.log('memento after update:', memento);
+    setShow(false);
+    setNewWord('');
+    setRerender((old) => !old);
+  };
 
   return (
     <Modal

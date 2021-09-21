@@ -6,7 +6,7 @@ import './wavesurfer.css';
 import WSControls from './WSControls';
 import TranscriptionContainer from './TranscriptionContainer';
 
-function WaveSurfer({ link, parsedJson, destroy }) {
+function WaveSurfer({ link, destroy }) {
   const [waveSurfer, setWaveSurfer] = useState(null);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
@@ -16,8 +16,12 @@ function WaveSurfer({ link, parsedJson, destroy }) {
     body: '',
     word: '',
     type: '',
+    pIndex: 0,
+    wIndex: 0,
   });
   const [show, setShow] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [rerender, setRerender] = useState(false);
   ///wave surfer
   useEffect(() => {
     setWaveSurfer(
@@ -57,7 +61,8 @@ function WaveSurfer({ link, parsedJson, destroy }) {
 
   useEffect(() => {
     if (waveSurfer != null) {
-      waveSurfer.on('ready', () => {
+      waveSurfer.on('waveform-ready', () => {
+        setDuration(waveSurfer.getDuration());
         setPlayerReady(true);
       });
       waveSurfer.on('play', () => {
@@ -78,13 +83,9 @@ function WaveSurfer({ link, parsedJson, destroy }) {
       });
     }
 
-    return () => {
-      if (waveSurfer) {
-        waveSurfer.un('ready', () => {
-          console.log('unsubbed');
-        });
-      }
-    };
+    if (waveSurfer) {
+      return () => waveSurfer.un('waveform-ready');
+    }
   }, [waveSurfer, playbackTime]);
 
   const getMinutes = (time) => {
@@ -111,12 +112,12 @@ function WaveSurfer({ link, parsedJson, destroy }) {
 
             <pre style={{ margin: 0 }}>
               {getMinutes(playbackTime)}:{getSeconds(playbackTime)}s/
-              {waveSurfer && getMinutes(waveSurfer.getDuration())}:
-              {waveSurfer && getSeconds(waveSurfer.getDuration())}s
+              {waveSurfer && getMinutes(duration)}:
+              {waveSurfer && getSeconds(duration)}s
             </pre>
             <ProgressBar
               now={playbackTime}
-              max={waveSurfer.getDuration()}
+              max={duration}
               variant='dark'
               className='border w-100'
             />
@@ -143,14 +144,17 @@ function WaveSurfer({ link, parsedJson, destroy }) {
         word={selectedWord.word}
         type={selectedWord.type}
         title={selectedWord.title}
+        wIndex={selectedWord.wIndex}
+        pIndex={selectedWord.pIndex}
+        setRerender={setRerender}
       />
 
       <TranscriptionContainer
-        parsedJson={parsedJson}
         playbackTime={playbackTime}
         waveSurfer={waveSurfer}
         setSelectedWord={setSelectedWord}
         setShow={setShow}
+        rerender={rerender}
       />
     </>
   );

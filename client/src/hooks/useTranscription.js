@@ -36,8 +36,29 @@ const useTranscription = () => {
     }
   }
 
+  async function fetchTranscription(url) {
+    let temp = [];
+    try {
+      const { data } = await axios.get(url);
+      if (data.length) {
+        data.forEach((paragraphs) => {
+          if (paragraphs.alternatives) {
+            temp.push(paragraphs.alternatives[0]);
+          } else {
+            temp.push(paragraphs);
+          }
+        });
+        console.log(temp);
+        return temp;
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
   return {
     createTranscription,
+    fetchTranscription,
   };
 };
 
