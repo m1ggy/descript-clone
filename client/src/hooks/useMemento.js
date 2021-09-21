@@ -45,12 +45,29 @@ const useMemento = (stateName) => {
     undoSnapshots = [];
   }
 
+  /**
+   *
+   * @returns boolean value whether the undo array is empty or not
+   */
+  function isUndoEmpty() {
+    return undoSnapshots.length === 0 ? true : false;
+  }
+  /**
+   *
+   * @returns boolean value whether the redo array is empty or not
+   */
+  function isRedoEmpty() {
+    return redoSnapshots.length === 0 ? true : false;
+  }
+
   return {
     save,
     setNewMemento,
     redo,
     undo,
     state,
+    isUndoEmpty,
+    isRedoEmpty,
   };
 };
 

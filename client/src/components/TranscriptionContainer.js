@@ -1,6 +1,12 @@
 import React, { useCallback } from 'react';
 import TranscriptionWord from './TranscriptionWord';
-function TranscriptionContainer({ parsedJson, waveSurfer, playbackTime }) {
+function TranscriptionContainer({
+  parsedJson,
+  waveSurfer,
+  playbackTime,
+  setSelectedWord,
+  setShow,
+}) {
   const startTimeFloat = (word) => {
     return parseFloat(
       `${(word.startTime.seconds && word.startTime.seconds) || 0}.${
@@ -45,6 +51,8 @@ function TranscriptionContainer({ parsedJson, waveSurfer, playbackTime }) {
                 key={i}
                 progress={wordActive}
                 className='ts-word'
+                select={setSelectedWord}
+                setShow={setShow}
               />
             );
           })}

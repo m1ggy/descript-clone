@@ -4,11 +4,12 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
-  // FaSave,
+  FaSave,
   FaUndo,
   FaArrowLeft,
   FaFileExport,
   FaCheck,
+  FaRedo,
 } from 'react-icons/fa';
 import { RiCloseLine } from 'react-icons/ri';
 import { CgTranscript } from 'react-icons/cg';
@@ -34,6 +35,7 @@ function CurrentProject() {
   // const [saving, setSaving] = useState(false);
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
+  const setTranscription = useStore((state) => state.setTranscription);
   const [rawJson, setRawJson] = useState(null);
   const [parsedJson, setParsedJson] = useState(null);
   const [transcribing, setTranscribing] = useState(false);
@@ -70,6 +72,7 @@ function CurrentProject() {
           temp.push(paragraphs.alternatives[0]);
         });
 
+        setTranscription(temp);
         return setParsedJson(temp);
       }
 
@@ -79,7 +82,7 @@ function CurrentProject() {
     if (rawJson) {
       fetchJson();
     }
-  }, [rawJson]);
+  }, [rawJson, setTranscription]);
 
   useEffect(() => {
     if (currentProject) {
@@ -130,6 +133,7 @@ function CurrentProject() {
               marginLeft: '35px',
               marginBottom: '25px',
             }}
+            disabled={transcribing}
           >
             Go back <FaArrowLeft size='1.5em' style={{ marginLeft: '3px' }} />
           </Button>
@@ -303,17 +307,10 @@ function CurrentProject() {
                           }}
                           disabled={true}
                         >
-                          {/* {saving ? (
-                            <Spinner animation='border' size='sm' />
-                          ) : (
-                            <>
-                              Save{' '}
-                              <FaSave
-                                size='2em'
-                                style={{ marginLeft: '3px' }}
-                              />
-                            </>
-                          )} */}
+                          <>
+                            Save{' '}
+                            <FaSave size='2em' style={{ marginLeft: '3px' }} />
+                          </>
                         </Button>
                       </span>
                     </OverlayToolTip>
@@ -342,6 +339,34 @@ function CurrentProject() {
                         >
                           Undo{' '}
                           <FaUndo size='2em' style={{ marginLeft: '3px' }} />
+                        </Button>
+                      </span>
+                    </OverlayToolTip>
+                    <OverlayToolTip
+                      content={
+                        <div style={{ margin: '5px' }}>
+                          <p>Redo recent undo.</p>
+                          <small>Redo Shortcut Key</small>
+                          <br />
+                          <br />
+                          <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>
+                        </div>
+                      }
+                      placement='top'
+                    >
+                      <span>
+                        <Button
+                          size='sm'
+                          variant='warning'
+                          style={{
+                            width: 'fit-content',
+                            pointerEvents: 'none',
+                            marginLeft: '10px ',
+                          }}
+                          disabled={true}
+                        >
+                          Redo
+                          <FaRedo size='2em' style={{ marginLeft: '3px' }} />
                         </Button>
                       </span>
                     </OverlayToolTip>

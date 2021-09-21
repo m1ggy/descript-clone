@@ -14,8 +14,20 @@ function TranscriptionWord({
   },
   progress,
   className,
+  select,
+  setShow,
 }) {
   const [open, setOpen] = useState(false);
+
+  const onSelectOption = (title, type, word) => {
+    select({
+      word,
+      title,
+      type,
+    });
+    setShow(true);
+    setOpen(false);
+  };
 
   const popover = (
     <Popover style={{ width: '250px' }}>
@@ -25,22 +37,36 @@ function TranscriptionWord({
           <p style={{ margin: 0, fontWeight: 'bolder' }}>Modify</p>
           <ul>
             <li>
-              <pre className='text-info option-item'>
+              <pre
+                className='text-info option-item'
+                onClick={() => {
+                  onSelectOption('Edit Text', 'editText', word);
+                }}
+              >
                 Edit Text <FiEdit3 />
               </pre>
             </li>
             <li>
-              <pre className='text-info option-item'>
-                Edit Text and Audio <FiEdit3 />
+              <pre
+                className='text-warning option-item'
+                onClick={() => {
+                  onSelectOption(
+                    'Replace Text and Audio',
+                    'replaceTextAudio',
+                    word
+                  );
+                }}
+              >
+                Replace Text and Audio <VscReplaceAll />
               </pre>
             </li>
             <li>
-              <pre className='text-warning option-item'>
-                Replace <VscReplaceAll />
-              </pre>
-            </li>
-            <li>
-              <pre className='text-danger option-item'>
+              <pre
+                className='text-danger option-item'
+                onClick={() => {
+                  onSelectOption('Delete Word', 'deleteWord', word);
+                }}
+              >
                 Delete <RiDeleteBinLine />
               </pre>
             </li>
@@ -69,11 +95,9 @@ function TranscriptionWord({
         trigger='click'
         placement='top'
         overlay={popover}
-        onEnter={() => {
-          setOpen(true);
-        }}
-        onExit={() => setOpen(false)}
         rootClose
+        show={open}
+        onToggle={() => setOpen(false)}
       >
         <div
           className={`word ${progress(word) && className}`}
@@ -92,6 +116,9 @@ function TranscriptionWord({
               ? '#b5e4c5'
               : null,
             color: open ? 'white' : 'black',
+          }}
+          onClick={() => {
+            setOpen(!open);
           }}
         >
           <div style={{ maxHeight: '75%' }}>

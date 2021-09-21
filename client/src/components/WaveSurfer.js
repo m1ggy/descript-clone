@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ws from 'wavesurfer.js';
-import { Spinner } from 'react-bootstrap';
-
+import { Spinner, ProgressBar } from 'react-bootstrap';
+import ModifyWordModal from './ModifyWordModal';
 import './wavesurfer.css';
 import WSControls from './WSControls';
 import TranscriptionContainer from './TranscriptionContainer';
@@ -11,7 +11,13 @@ function WaveSurfer({ link, parsedJson, destroy }) {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-
+  const [selectedWord, setSelectedWord] = useState({
+    title: '',
+    body: '',
+    word: '',
+    type: '',
+  });
+  const [show, setShow] = useState(false);
   ///wave surfer
   useEffect(() => {
     setWaveSurfer(
@@ -108,6 +114,12 @@ function WaveSurfer({ link, parsedJson, destroy }) {
               {waveSurfer && getMinutes(waveSurfer.getDuration())}:
               {waveSurfer && getSeconds(waveSurfer.getDuration())}s
             </pre>
+            <ProgressBar
+              now={playbackTime}
+              max={waveSurfer.getDuration()}
+              variant='dark'
+              className='border w-100'
+            />
           </div>
         </WSControls>
       ) : (
@@ -125,11 +137,20 @@ function WaveSurfer({ link, parsedJson, destroy }) {
         </div>
       )}
       <div id='waveform'></div>
+      <ModifyWordModal
+        setShow={setShow}
+        show={show}
+        word={selectedWord.word}
+        type={selectedWord.type}
+        title={selectedWord.title}
+      />
 
       <TranscriptionContainer
         parsedJson={parsedJson}
         playbackTime={playbackTime}
         waveSurfer={waveSurfer}
+        setSelectedWord={setSelectedWord}
+        setShow={setShow}
       />
     </>
   );

@@ -400,21 +400,10 @@ export const CreateProjectWithMedia = [
       return res.status(404).json({ message: 'project info is not provided.' });
 
     //common path
-    const textPath = `${__dirname}/temp/${projectName}.txt`;
+
     const mediaPath = file.path;
 
-    ///create temp file
-    try {
-      await fs.promises.writeFile(textPath, '');
-      console.log('created text file');
-    } catch (e) {
-      return res
-        .status(404)
-        .json({ message: 'cannot create temp text file', e });
-    }
-
     ///paths for GCS files
-    const textDestination = `${user}/${projectName}/${projectName}.txt`;
     const mediaDestination = `${user}/${projectName}/${file.originalname}`;
 
     ///if there is a converted audio, create a new destination for GCS
@@ -423,22 +412,14 @@ export const CreateProjectWithMedia = [
     }
 
     ///paths for local temp file to GCS
-    const text = projectBucket.file(textDestination);
     const media = projectBucket.file(mediaDestination);
     if (convertedDestination)
       converted = projectBucket.file(convertedDestination);
 
-    if ((await text.exists()[0]) || (await media.exists()[0]))
+    if (await media.exists()[0])
       return res.status(400).json({ message: 'project already exists' });
 
     try {
-      ////upload files to GCS
-      await projectBucket.upload(textPath, {
-        destination: textDestination,
-        metadata: {
-          cacheControl: 'private, max-age=0, no-transform',
-        },
-      });
       console.log(`Uploaded file ${text.name}`);
       await projectBucket.upload(mediaPath, {
         destination: mediaDestination,
@@ -470,7 +451,6 @@ export const CreateProjectWithMedia = [
         const newProject = new projectModel({
           projectName,
           files: {
-            transcription: { link: text.publicUrl(), createdAt: new Date() },
             media: [
               {
                 url: media.publicUrl(),
@@ -495,7 +475,6 @@ export const CreateProjectWithMedia = [
         const newProject = new projectModel({
           projectName,
           files: {
-            transcription: { link: text.publicUrl(), createdAt: new Date() },
             media: [
               {
                 url: media.publicUrl(),
@@ -531,7 +510,6 @@ export const CreateProjectWithMedia = [
     // delete temp file
     try {
       await fs.promises.unlink(mediaPath);
-      await fs.promises.unlink(textPath);
       if (convertedAudio) {
         await fs.promises.unlink(convertedAudio);
       }
