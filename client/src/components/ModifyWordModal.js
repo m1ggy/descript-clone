@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import useMemento from '../hooks/useMemento';
-import useStore from '../store';
 
-// import useStore from '../store';
 function ModifyWordModal({
   show = false,
   setShow = () => null,
@@ -15,19 +13,12 @@ function ModifyWordModal({
 }) {
   const onHide = () => setShow(false);
   const [newWord, setNewWord] = useState('');
-
-  const memento = useStore((state) => state.memento);
-  const getMemento = useStore((state) => state.getMemento);
   const { setNewMemento } = useMemento();
 
   const handleEdit = (e) => {
     e.preventDefault();
 
-    // let temp = getMemento();
-    // temp[pIndex].words[wIndex].word = newWord;
-
     setNewMemento(pIndex, wIndex, newWord);
-    console.log('memento after update:', memento);
     setShow(false);
     setNewWord('');
     setRerender((old) => !old);

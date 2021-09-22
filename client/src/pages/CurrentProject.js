@@ -50,7 +50,8 @@ function CurrentProject() {
 
   const { createTranscription, fetchTranscription } = useTranscription();
   const { saveTranscription } = useProject();
-  const { flush, undo, redo, undoSnapshots, redoSnapshots } = useMemento();
+  const { flush, undo, redo, undoSnapshots, redoSnapshots, save } =
+    useMemento();
   const setMemento = useStore((state) => state.setMemento);
   const memento = useStore(mementoSelector);
   useEffect(() => {
@@ -112,7 +113,17 @@ function CurrentProject() {
       pending: 'Saving changes ...',
       error: 'Failed to save changes',
     });
+    save();
     setSaving(false);
+  };
+
+  const handleUndo = () => {
+    undo();
+    toast.warn('Undo', { autoClose: 1000 });
+  };
+  const handleRedo = () => {
+    redo();
+    toast.warn('Redo', { autoClose: 1000 });
   };
   return (
     <Row>
@@ -229,10 +240,13 @@ function CurrentProject() {
               onKeyDown={(e) => {
                 if (e.ctrlKey && e.key === 's') {
                   e.preventDefault();
+                  saveTS(id);
                 } else if (e.ctrlKey && e.key === 'z') {
                   e.preventDefault();
+                  handleUndo();
                 } else if (e.ctrlKey && e.shiftKey && e.key === 'z') {
                   e.preventDefault();
+                  handleRedo();
                 }
               }}
             >
@@ -277,6 +291,14 @@ function CurrentProject() {
                           </>
                         )}
                       </>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    {undoSnapshots.length || redoSnapshots.length ? (
+                      <pre style={{ margin: 0, color: 'red' }}>
+                        Unsaved changes
+                      </pre>
                     ) : null}
                   </div>
 
@@ -344,7 +366,7 @@ function CurrentProject() {
                             marginLeft: '10px ',
                           }}
                           disabled={undoSnapshots.length ? false : true}
-                          onClick={() => undo()}
+                          onClick={handleUndo}
                         >
                           Undo{' '}
                           <FaUndo size='2em' style={{ marginLeft: '3px' }} />
@@ -373,7 +395,7 @@ function CurrentProject() {
                             marginLeft: '10px ',
                           }}
                           disabled={redoSnapshots.length ? false : true}
-                          onClick={redo}
+                          onClick={handleRedo}
                         >
                           Redo
                           <FaRedo size='2em' style={{ marginLeft: '3px' }} />
