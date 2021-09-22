@@ -22,6 +22,7 @@ function WaveSurfer({ link, destroy }) {
   const [show, setShow] = useState(false);
   const [duration, setDuration] = useState(0);
   const [rerender, setRerender] = useState(false);
+
   ///wave surfer
   useEffect(() => {
     setWaveSurfer(
@@ -147,6 +148,7 @@ function WaveSurfer({ link, destroy }) {
         wIndex={selectedWord.wIndex}
         pIndex={selectedWord.pIndex}
         setRerender={setRerender}
+        duration={duration}
       />
 
       <TranscriptionContainer

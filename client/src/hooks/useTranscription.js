@@ -29,7 +29,6 @@ const useTranscription = () => {
         resolve();
       });
     } catch (e) {
-      console.log(e);
       return new Promise((reject) => {
         reject();
       });
@@ -48,7 +47,7 @@ const useTranscription = () => {
             temp.push(paragraphs);
           }
         });
-        console.log(temp);
+
         return temp;
       }
     } catch (e) {

@@ -49,7 +49,6 @@ function CreateNewModal({ show, setShow }) {
         error: 'Failed to create project.',
       });
     } catch (e) {
-      console.log(e);
       setServerMessage({ content: e, type: 'danger' });
     }
     setProjectName('');

@@ -68,7 +68,6 @@ function CurrentProject() {
 
   ///fetch json data
   useEffect(() => {
-    console.log('fetched json');
     async function fetchJson() {
       setTranscriptionLoading(true);
       setTranscription(await fetchTranscription(rawJson.url));
@@ -106,7 +105,6 @@ function CurrentProject() {
   };
 
   const saveTS = async (id) => {
-    console.log('current memento:', memento);
     setSaving(true);
     await toast.promise(saveTranscription(id, memento), {
       success: 'Saved changes',
@@ -218,7 +216,7 @@ function CurrentProject() {
                             setShowMedia(true);
                           }}
                         >
-                          {x.name.length > 15
+                          {x.name.length > 20
                             ? x.name.slice(0, 15) +
                               '...' +
                               x.name.split('.')[x.name.split('.').length - 1]

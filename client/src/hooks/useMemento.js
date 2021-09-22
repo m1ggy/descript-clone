@@ -23,7 +23,6 @@ const useMemento = () => {
     const temp = JSON.parse(JSON.stringify(memento));
     setRedo([...redoSnapshots, temp]);
     setMemento(snapshot);
-    console.log('undo');
   }
 
   /**
@@ -37,15 +36,17 @@ const useMemento = () => {
     const temp = JSON.parse(JSON.stringify(memento));
     setUndo([...undoSnapshots, temp]);
     setMemento(snapshot);
-    console.log('redo');
   }
 
   /**
    * sets the memento to the given parameter
-   * @param {Array.<Object>} snapshot new snapshot from user
+   * @param {Number} pIndex paragraph index
+   * @param {Number} wIndex word index
+   * @param {String} newWord new string to replace existing word
    */
   function setNewMemento(pIndex, wIndex, newWord) {
     let temp = JSON.parse(JSON.stringify(memento));
+
     temp[pIndex].words[wIndex].word = newWord;
     let oldMemento = JSON.parse(JSON.stringify(memento));
     setUndo([...undoSnapshots, oldMemento]);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function TimeElapsed({ start, stop }) {
   const [currentTime, setCurrentTime] = useState({
@@ -6,20 +6,22 @@ function TimeElapsed({ start, stop }) {
     minutes: '0',
     seconds: '0',
   });
-  let timer;
+  useEffect(() => {
+    let timer = setTimeout(() => {
+      var t = Date.parse(new Date()) - Date.parse(start);
+      if (stop) {
+        clearInterval(timer);
+      }
+      var seconds = Math.floor((t / 1000) % 60);
+      var minutes = Math.floor((t / 1000 / 60) % 60);
+      var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+      var days = Math.floor(t / (1000 * 60 * 60 * 24));
 
-  timer = setTimeout(() => {
-    var t = Date.parse(new Date()) - Date.parse(start);
-    if (stop) {
-      clearInterval(timer);
-    }
-    var seconds = Math.floor((t / 1000) % 60);
-    var minutes = Math.floor((t / 1000 / 60) % 60);
-    var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-    var days = Math.floor(t / (1000 * 60 * 60 * 24));
+      setCurrentTime({ seconds, minutes, hours, days });
+    }, 1000);
 
-    setCurrentTime({ seconds, minutes, hours, days });
-  }, 1000);
+    return () => clearTimeout(timer);
+  });
 
   return (
     currentTime && (

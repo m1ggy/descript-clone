@@ -57,7 +57,9 @@ function TranscriptionWord({
                   onSelectOption(
                     'Replace Text and Audio',
                     'replaceTextAudio',
-                    word
+                    word,
+                    pIndex,
+                    wIndex
                   );
                 }}
               >
@@ -68,7 +70,13 @@ function TranscriptionWord({
               <pre
                 className='text-danger option-item'
                 onClick={() => {
-                  onSelectOption('Delete Word', 'deleteWord', word);
+                  onSelectOption(
+                    'Delete Word',
+                    'deleteWord',
+                    word,
+                    pIndex,
+                    wIndex
+                  );
                 }}
               >
                 Delete <RiDeleteBinLine />

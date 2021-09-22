@@ -69,7 +69,6 @@ function useProject() {
       setCurrentProject(res.data.project);
       return res.data.message;
     } catch (e) {
-      console.log(e.response);
       return e.response;
     }
   }
@@ -89,7 +88,6 @@ function useProject() {
       fetchProject(id);
       return res.data.message;
     } catch (e) {
-      console.log(e.response);
       return e.response;
     }
   }
@@ -135,12 +133,11 @@ function useProject() {
     const token = localStorage.getItem('accessToken');
 
     try {
-      const res = await axios.post(`${baseurl}/project/new/media`, media, {
+      await axios.post(`${baseurl}/project/new/media`, media, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(res);
     } catch (e) {
       console.log(e.response);
     }

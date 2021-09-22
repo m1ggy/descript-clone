@@ -52,7 +52,6 @@ function RecordVideoModal({ show, setShow }) {
   async function handler() {
     setLoading(true);
     try {
-      console.log(currentBlob);
       const media = new FormData();
       media.append('media', currentBlob, `${projectName}.webm`);
       media.append('projectName', projectName);

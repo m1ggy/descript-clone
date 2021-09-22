@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import useMemento from '../hooks/useMemento';
+import useEdit from '../hooks/useEdit';
+import EditAudioAndText from './EditAudioAndText';
 
 function ModifyWordModal({
   show = false,
@@ -10,15 +12,39 @@ function ModifyWordModal({
   pIndex,
   wIndex,
   setRerender,
+  duration,
+  word,
 }) {
-  const onHide = () => setShow(false);
   const [newWord, setNewWord] = useState('');
   const { setNewMemento } = useMemento();
+  const { editAudioAndText } = useEdit();
+  const [recording, setRecording] = useState(false);
+  const [useExisting, setUseExisting] = useState(false);
 
+  const onHide = () => {
+    setShow(false);
+  };
   const handleEdit = (e) => {
     e.preventDefault();
 
     setNewMemento(pIndex, wIndex, newWord);
+    setShow(false);
+    setNewWord('');
+    setRerender((old) => !old);
+  };
+
+  const handleEditAudioText = (e, newRecording) => {
+    e.preventDefault();
+    editAudioAndText(
+      pIndex,
+      wIndex,
+      newWord,
+      useExisting,
+      newRecording,
+      duration,
+      word.startTime,
+      word.endTime
+    );
     setShow(false);
     setNewWord('');
     setRerender((old) => !old);
@@ -30,9 +56,8 @@ function ModifyWordModal({
       aria-labelledby='contained-modal-title-vcenter'
       centered
       show={show}
-      onClose={onHide}
     >
-      <Modal.Header closeButton>
+      <Modal.Header>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -52,20 +77,14 @@ function ModifyWordModal({
             </Form>
           </>
         ) : type === 'replaceTextAudio' ? (
-          <>
-            <Form onSubmit={handleEdit}>
-              <Form.Group>
-                <Form.Label>Replace Text and Audio</Form.Label>
-                <Form.Control
-                  type='text'
-                  required
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                />
-              </Form.Group>
-              <Button type='submit'>Submit</Button>
-            </Form>
-          </>
+          <EditAudioAndText
+            setNewWord={setNewWord}
+            newWord={newWord}
+            handleEditAudioText={handleEditAudioText}
+            setRecording={setRecording}
+            setUseExisting={setUseExisting}
+            useExisting={useExisting}
+          />
         ) : type === 'deleteWord' ? (
           <>
             <p>Do you want to delete this word? the audio will be muted.</p>
@@ -74,7 +93,9 @@ function ModifyWordModal({
         ) : null}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={onHide}>Close</Button>
+        <Button onClick={onHide} disabled={recording} variant='outline-danger'>
+          Cancel
+        </Button>
       </Modal.Footer>
     </Modal>
   );

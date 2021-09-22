@@ -44,7 +44,6 @@ function useAuth() {
       }
     } catch (e) {
       const { message } = e.response.data;
-      console.log(e.response.data);
       return { content: message, type: 'danger' };
     }
   }

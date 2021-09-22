@@ -20,6 +20,7 @@ const useRecorder = (
   const [url, setUrl] = useState('');
   const [recordingActive, setRecordingActive] = useState(false);
   const [currentBlob, setCurrentBlob] = useState(null);
+  const [startingRecording, setStartingRecording] = useState(false);
 
   /**
    * starts recording with video and/or audio
@@ -99,7 +100,7 @@ const useRecorder = (
 
       recording.onstop = () => {
         ///stop all streams
-        console.log(combinedAudio);
+
         captureStream.getTracks().forEach((track) => {
           track.stop();
         });
@@ -189,7 +190,6 @@ const useRecorder = (
       recording.onstop = () => {
         ///stop all streams
         audioStream.getTracks().forEach((x) => {
-          console.log(x.getSettings());
           x.stop();
         });
         ///create new blob
@@ -204,13 +204,14 @@ const useRecorder = (
       };
 
       startCountdown(true);
+      setStartingRecording(true);
       setTimeout(() => {
         recording?.start();
+        setStartingRecording(false);
         setRecordingActive(true);
         startCountdown(false);
       }, delay);
     } catch (e) {
-      console.log(e);
       return false;
     }
   }
@@ -223,6 +224,7 @@ const useRecorder = (
     currentBlob,
     resetRecorder,
     startAudioRecording,
+    startingRecording,
   };
 };
 

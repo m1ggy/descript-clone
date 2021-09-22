@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import fs from 'fs';
-import path, { resolve } from 'path';
+import path, { format } from 'path';
 
 const __dirname = path.resolve();
 
@@ -74,4 +74,89 @@ export async function convertToMp3(pathToVideo, filename, newName) {
   } catch (e) {
     return null;
   }
+}
+
+export async function cutAudio(
+  path,
+  newAudioPath,
+  start,
+  end,
+  projectName,
+  duration
+) {
+  const ffmpeg = createFFmpeg({ log: true });
+
+  const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
+  try {
+    await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
+
+    await ffmpeg.load();
+
+    ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
+
+    ffmpeg.FS(
+      'writeFile',
+      `${projectName}Edit.webm`,
+      await fetchFile(newAudioPath)
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      `00:00:00`,
+      '-i',
+      `${projectName}.webm`,
+      '-t',
+      formatTime(start),
+      '-c',
+      'copy',
+      `${projectName}1.webm`
+    );
+    await ffmpeg.run(
+      '-ss',
+      formatTime(end),
+      '-i',
+      `${projectName}.webm`,
+      '-t',
+      formatTime(duration),
+      '-c',
+      'copy',
+      `${projectName}2.webm`
+    );
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}1.webm`,
+      '-i',
+      `${projectName}Edit.webm`,
+      '-i',
+      `${projectName}2.webm`,
+      '-filter_complex',
+      '[0:0][1:0][2:0]concat=n=3:v=0:a=1[out]',
+      '-map',
+      '[out]',
+      `${projectName}Output.webm`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${projectName}Output.webm`)
+    );
+
+    return outputPath;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
+export function formatTime(seconds) {
+  const minutes = Math.floor((seconds % 3600) / 60)
+    .toString()
+    .padStart(2, '0');
+  const newSeconds = (seconds % 60).toFixed(2).toString().padStart(2, '0');
+  const hours = Math.floor(seconds / 3600)
+    .toString()
+    .padStart(2, '0');
+
+  return `${hours}:${minutes}:${newSeconds}`;
 }
