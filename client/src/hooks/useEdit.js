@@ -29,7 +29,7 @@ const useEdit = () => {
     console.log(pIndex, wIndex, newWord);
     setNewMemento(pIndex, wIndex, newWord);
 
-    audio = media.filter((x) => x.type.includes('audio'))[0];
+    [audio] = media.filter((x) => x.type.includes('audio'));
 
     audio = JSON.parse(JSON.stringify(audio));
     const editId = uuidv4();
@@ -57,7 +57,7 @@ const useEdit = () => {
           autoClose: 2000,
         });
       } else if (useExisting && options.length <= 0) {
-        toast.warn('');
+        toast.warn('Found no existing word, editing the text only...');
       } else {
         const form = new FormData();
         form.append('media', newRecording, `${audioId}-media.webm`);
