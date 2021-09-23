@@ -18,13 +18,11 @@ const useEdit = () => {
     pIndex,
     wIndex,
     newWord,
-    useExisting,
     newRecording = null,
     duration,
     start,
     end
   ) {
-    let options = [];
     const audioId = uuidv4();
     const {
       files: { media },
@@ -37,17 +35,15 @@ const useEdit = () => {
     setNewMemento(pIndex, wIndex, newWord, editId);
 
     memento.forEach((x) => {
-      if (x.editId) {
+      if (x.editId && audioMemento.length) {
         editedId = x.editId;
         useEdited = true;
       }
     });
 
-    console.log(audio);
     ///if we have an existing edited audio file, use that instead
     ///else use the default audio
     if (useEdited) {
-      console.log('use edited', audio);
       [audio] = audioMemento.filter((x) => x.id.includes(`${editedId}`));
       audio = JSON.parse(JSON.stringify(audio));
       audio.duration = duration;
@@ -57,7 +53,6 @@ const useEdit = () => {
       audio.editId = editId;
     } else {
       [audio] = media.filter((x) => x.type.includes('audio'));
-      console.log('use existing', audio);
       audio = JSON.parse(JSON.stringify(audio));
       audio.duration = duration;
       audio.start = start;
@@ -66,8 +61,57 @@ const useEdit = () => {
       audio.editId = editId;
     }
 
-    const blob = new Blob([JSON.stringify(audio)], {
-      type: 'application/json',
+    try {
+      const blob = new Blob([JSON.stringify(audio)], {
+        type: 'application/json',
+      });
+
+      const form = new FormData();
+      form.append('media', newRecording, `${audioId}-media.webm`);
+      form.append('existingAudio', blob);
+
+      const { data } = await axios.post(
+        `${baseurl}/edit/${currentProject._id}`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAudioMemento([...audioMemento, data]);
+
+      return new Promise((resolve) => resolve());
+    } catch (e) {
+      return new Promise((resolve, reject) => reject(e));
+    }
+  }
+
+  async function editAudioWithExisting(
+    pIndex,
+    wIndex,
+    newWord,
+    start,
+    end,
+    duration
+  ) {
+    const {
+      files: { media },
+    } = currentProject;
+    let options = [];
+    let useEdited = false;
+    let editedId = null;
+    let audio = null;
+
+    const editId = uuidv4();
+    setNewMemento(pIndex, wIndex, newWord, editId);
+
+    memento.forEach((x) => {
+      if (x.editId && audioMemento.length) {
+        editedId = x.editId;
+        useEdited = true;
+      }
     });
 
     transcription.forEach((ts) => {
@@ -78,36 +122,31 @@ const useEdit = () => {
       });
     });
 
-    try {
-      if (useExisting && options.length && newRecording != null) {
-        toast.warn('Found existing word, using existing audio instead...', {
-          autoClose: 2000,
-        });
+    if (useEdited) {
+      [audio] = audioMemento.filter((x) => x.id.includes(`${editedId}`));
+    } else {
+      [audio] = media.filter((x) => x.type.includes('audio'));
+    }
 
-        const form = new FormData();
-        const [audio] = media.filter((x) => x.type.includes('audio'));
-        form.append('media', audio, `${audioId}-media.webm`);
-        form.append('existingAudio', blob);
-      } else if (useExisting && options.length && newRecording == null) {
+    if (options.length) {
+      ////we use the first option only
+      audio.originator = options[0];
+      audio.start = start;
+      audio.end = end;
+      audio.duration = duration;
+      audio.projectName = currentProject.projectName;
+      audio.editId = editId;
+    }
+
+    try {
+      if (options.length) {
         toast.warn('Found existing word, using existing audio...', {
           autoClose: 2000,
         });
-      } else if (useExisting && options.length <= 0 && newRecording != null) {
-        toast.warn('Found no existing word, using new recording...');
-      } else if (useExisting && options.length <= 0 && newRecording == null) {
-        toast.warn('Found existing word, editing the text only...', {
-          autoClose: 2000,
-        });
-      } else {
-        const form = new FormData();
-        form.append('media', newRecording, `${audioId}-media.webm`);
-        form.append('existingAudio', blob);
-
-        console.log(form.values());
 
         const { data } = await axios.post(
-          `${baseurl}/edit/${currentProject._id}`,
-          form,
+          `${baseurl}/edit/${currentProject._id}/existing`,
+          { audio },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -116,9 +155,12 @@ const useEdit = () => {
         );
 
         setAudioMemento([...audioMemento, data]);
-
         return new Promise((resolve) => resolve());
       }
+
+      return new Promise((resolve, reject) =>
+        reject('Found no existing word.')
+      );
     } catch (e) {
       return new Promise((resolve, reject) => reject(e));
     }
@@ -187,6 +229,7 @@ const useEdit = () => {
     muteAudio,
     flushEdits,
     saveAudio,
+    editAudioWithExisting,
   };
 };
 export default useEdit;

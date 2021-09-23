@@ -61,23 +61,27 @@ function EditAudioAndText({
             onChange={(e) => setNewWord(e.target.value)}
           />
         </Form.Group>
-        <Form.Group>
-          <Form.Label>Record new Audio?</Form.Label>
-          <Form.Check
-            inline
-            value={recordNew}
-            onChange={(e) => setRecordNew(e.target.checked)}
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>If word already exist, use that audio</Form.Label>
-          <Form.Check
-            inline
-            value={useExisting}
-            onChange={(e) => setUseExisting(e.target.checked)}
-          />
-        </Form.Group>
-        {recordNew && (
+        {!useExisting && (
+          <Form.Group>
+            <Form.Label>Record new Audio?</Form.Label>
+            <Form.Check
+              inline
+              value={recordNew}
+              onChange={(e) => setRecordNew(e.target.checked)}
+            />
+          </Form.Group>
+        )}
+        {!recordNew && (
+          <Form.Group>
+            <Form.Label>If word already exist, use that audio</Form.Label>
+            <Form.Check
+              inline
+              value={useExisting}
+              onChange={(e) => setUseExisting(e.target.checked)}
+            />
+          </Form.Group>
+        )}
+        {recordNew && !useExisting && (
           <div
             style={{
               display: 'flex',

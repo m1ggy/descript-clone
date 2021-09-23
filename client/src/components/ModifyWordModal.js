@@ -18,7 +18,7 @@ function ModifyWordModal({
 }) {
   const [newWord, setNewWord] = useState('');
   const { setNewMemento } = useMemento();
-  const { editAudioAndText } = useEdit();
+  const { editAudioAndText, editAudioWithExisting } = useEdit();
   const [recording, setRecording] = useState(false);
   const [useExisting, setUseExisting] = useState(false);
 
@@ -37,24 +37,46 @@ function ModifyWordModal({
   const handleEditAudioText = async (e, newRecording) => {
     e.preventDefault();
     setShow(false);
-    await toast.promise(
-      editAudioAndText(
-        pIndex,
-        wIndex,
-        newWord,
-        useExisting,
-        newRecording,
-        duration,
-        word.startTime,
-        word.endTime
-      ),
-      {
-        success: 'Edited Audio and Text',
-        pending: 'Editing audio....',
-        error: 'Failed to edit audio',
+    try {
+      if (useExisting) {
+        await toast.promise(
+          editAudioWithExisting(
+            pIndex,
+            wIndex,
+            newWord,
+            word.startTime,
+            word.endTime,
+            duration
+          ),
+          {
+            pending: 'Editing audio....',
+            success: 'Successfully edited audio',
+            error: {
+              render({ data }) {
+                return `${data}`;
+              },
+            },
+          }
+        );
+      } else {
+        await toast.promise(
+          editAudioAndText(
+            pIndex,
+            wIndex,
+            newWord,
+            newRecording,
+            duration,
+            word.startTime,
+            word.endTime
+          ),
+          {
+            success: 'Edited Audio and Text',
+            pending: 'Editing audio....',
+            error: 'Failed to edit audio',
+          }
+        );
       }
-    );
-
+    } catch {}
     setNewWord('');
     setRerender((old) => !old);
   };

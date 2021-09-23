@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
 import axios from 'axios';
-import { cutAudio, formatTime } from '../utils';
+import { cutAudio, extractAudio, formatTime } from '../utils';
 const __dirname = path.resolve();
 ///create local temp dir if it does not exist
 
@@ -73,9 +73,6 @@ const editAudio = [
         json.projectName,
         json.duration
       );
-
-      console.log(start, end);
-      console.log(formatTime(start), formatTime(end));
 
       if (outputPath === false)
         return res.status(404).json({ message: 'Cannot edit audio' });
@@ -186,4 +183,86 @@ const saveAudio = async (req, res) => {
   }
 };
 
-export { editAudio, deleteEdits, saveAudio };
+const editAudioWithExisting = async (req, res) => {
+  const {
+    user: { user },
+    params: { id },
+    body: { audio },
+  } = req;
+
+  await fs.promises.mkdir(`${__dirname}/temp/edit/${id}`, { recursive: true });
+  const audioPath = `${__dirname}/temp/edit/${id}/${audio.projectName}.webm`;
+  try {
+    console.log(user, audio, id);
+
+    const response = await axios.get(audio.url, { responseType: 'stream' });
+
+    response.data.pipe(fs.createWriteStream(audioPath));
+
+    const start = parseFloat(
+      `${(audio.start.seconds && audio.start.seconds) || '00'}.${
+        audio.start.nanos && audio.start.nanos / 10000000
+      }`
+    );
+
+    const end = parseFloat(
+      `${(audio.end.seconds && audio.end.seconds) || '00'}.${
+        audio.end.nanos && audio.end.nanos / 10000000
+      }`
+    );
+
+    const startOriginator = parseFloat(
+      `${
+        (audio.originator.startTime.seconds &&
+          audio.originator.startTime.seconds) ||
+        '00'
+      }.${
+        audio.originator.startTime.nanos &&
+        audio.originator.startTime.nanos / 10000000
+      }`
+    );
+
+    const endOriginator = parseFloat(
+      `${
+        (audio.originator.endTime.seconds &&
+          audio.originator.endTime.seconds) ||
+        '00'
+      }.${
+        audio.originator.endTime.nanos &&
+        audio.originator.endTime.nanos / 10000000
+      }`
+    );
+
+    const outputPath = await extractAudio(
+      audioPath,
+      start,
+      end,
+      audio.duration,
+      startOriginator,
+      endOriginator,
+      audio.projectName
+    );
+
+    if (outputPath == false)
+      return res.status(500).json('failed to edit audio');
+    const storagePath = `${user}/${audio.projectName}/edits/${audio.editId}.webm`;
+
+    await projectBucket.upload(outputPath, {
+      destination: storagePath,
+      metadata: {
+        cacheControl: 'private, max-age=0, no-transform',
+      },
+    });
+
+    const editedFile = projectBucket.file(storagePath);
+
+    return res
+      .status(200)
+      .json({ url: editedFile.publicUrl(), id: audio.editId });
+  } catch (e) {
+    console.log(e);
+    return res.status(404).json(e);
+  }
+};
+
+export { editAudio, deleteEdits, saveAudio, editAudioWithExisting };

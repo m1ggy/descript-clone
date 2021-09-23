@@ -142,6 +142,10 @@ export async function cutAudio(
       ffmpeg.FS('readFile', `${projectName}Output.webm`)
     );
 
+    ffmpeg.FS('unlink', `${projectName}Output.webm`);
+    ffmpeg.FS('unlink', `${projectName}2.webm`);
+    ffmpeg.FS('unlink', `${projectName}1.webm`);
+    ffmpeg.FS('unlink', `${projectName}Edit.webm`);
     return outputPath;
   } catch (e) {
     console.log(e);
@@ -149,14 +153,100 @@ export async function cutAudio(
   }
 }
 
-export function formatTime(seconds) {
+export async function extractAudio(
+  path,
+  start,
+  end,
+  duration,
+  originatorWordStart,
+  originatorWordEnd,
+  projectName
+) {
+  try {
+    const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    await ffmpeg.load();
+
+    ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
+
+    await ffmpeg.run(
+      '-ss',
+      `${formatTime(originatorWordStart)}`,
+      '-i',
+      `${projectName}Audio.webm`,
+      '-t',
+      `${formatTime(originatorWordEnd)}`,
+      `${projectName}Word.webm`
+    );
+
+    await fs.promises.writeFile(
+      `${__dirname}/temp/text.webm`,
+      ffmpeg.FS('readFile', `${projectName}Word.webm`)
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      `00:00:00`,
+      '-i',
+      `${projectName}Audio.webm`,
+      '-t',
+      formatTime(start),
+      '-c',
+      'copy',
+      `${projectName}1.webm`
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      formatTime(end),
+      '-i',
+      `${projectName}Audio.webm`,
+      '-t',
+      formatTime(duration),
+      '-c',
+      'copy',
+      `${projectName}2.webm`
+    );
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}1.webm`,
+      '-i',
+      `${projectName}Word.webm`,
+      '-i',
+      `${projectName}2.webm`,
+      '-filter_complex',
+      '[0:a][1:a][2:a]concat=n=3:v=0:a=1',
+      `${projectName}Output.webm`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${projectName}Output.webm`)
+    );
+
+    ffmpeg.FS('unlink', `${projectName}Output.webm`);
+    ffmpeg.FS('unlink', `${projectName}2.webm`);
+    ffmpeg.FS('unlink', `${projectName}1.webm`);
+    ffmpeg.FS('unlink', `${projectName}Word.webm`);
+
+    return outputPath;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
+export function formatTime(seconds = 0) {
   const minutes = Math.floor((seconds % 3600) / 60)
     .toString()
     .padStart(2, '0');
-  const newSeconds = (seconds % 60).toFixed(2).toString().padStart(2, '0');
+  const newSeconds = (seconds % 60).toFixed(1).toString().padStart(3, '0');
   const hours = Math.floor(seconds / 3600)
     .toString()
     .padStart(2, '0');
-
-  return `${hours || '00'}:${minutes || '00'}:${newSeconds || seconds}`;
+  return `${hours || '00'}:${minutes || '00'}:${
+    newSeconds || seconds.toString().padStart(3, '0')
+  }`;
 }

@@ -68,11 +68,13 @@ function WaveSurfer({ link, destroy }) {
     if (waveSurfer && memento) {
       let id = null;
       memento.forEach((x) => {
-        id = x.editId;
+        if (x.editId) {
+          id = x.editId;
+        }
       });
-
+      console.log(id);
       if (id && audioMemento.length) {
-        const [audio] = audioMemento.filter((x) => x.id === id);
+        const [audio] = audioMemento.filter((x) => x.id.includes(`${id}`));
 
         audio && waveSurfer.load(audio.url);
       } else {
