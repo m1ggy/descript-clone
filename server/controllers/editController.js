@@ -201,13 +201,13 @@ const editAudioWithExisting = async (req, res) => {
 
     const start = parseFloat(
       `${(audio.start.seconds && audio.start.seconds) || '00'}.${
-        audio.start.nanos && audio.start.nanos / 10000000
+        audio.start.nanos && audio.start.nanos / 100000
       }`
     );
 
     const end = parseFloat(
       `${(audio.end.seconds && audio.end.seconds) || '00'}.${
-        audio.end.nanos && audio.end.nanos / 10000000
+        audio.end.nanos && audio.end.nanos / 100000
       }`
     );
 
@@ -218,7 +218,7 @@ const editAudioWithExisting = async (req, res) => {
         '00'
       }.${
         audio.originator.startTime.nanos &&
-        audio.originator.startTime.nanos / 10000000
+        audio.originator.startTime.nanos / 100000
       }`
     );
 
@@ -229,7 +229,7 @@ const editAudioWithExisting = async (req, res) => {
         '00'
       }.${
         audio.originator.endTime.nanos &&
-        audio.originator.endTime.nanos / 10000000
+        audio.originator.endTime.nanos / 100000
       }`
     );
 
@@ -255,6 +255,9 @@ const editAudioWithExisting = async (req, res) => {
     });
 
     const editedFile = projectBucket.file(storagePath);
+
+    await fs.promises.unlink(outputPath);
+    await fs.promises.unlink(audioPath);
 
     return res
       .status(200)

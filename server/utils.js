@@ -107,8 +107,6 @@ export async function cutAudio(
       `${projectName}.webm`,
       '-t',
       formatTime(start),
-      '-c',
-      'copy',
       `${projectName}1.webm`
     );
     await ffmpeg.run(
@@ -116,10 +114,6 @@ export async function cutAudio(
       formatTime(end),
       '-i',
       `${projectName}.webm`,
-      '-t',
-      formatTime(duration),
-      '-c',
-      'copy',
       `${projectName}2.webm`
     );
 
@@ -166,23 +160,24 @@ export async function extractAudio(
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
     const ffmpeg = createFFmpeg({ log: true });
 
+    console.log(formatTime(originatorWordStart));
+    console.log(formatTime(originatorWordEnd));
+    console.log(formatTime(start));
+    console.log(formatTime(end));
+    console.log(formatTime(duration));
+
     await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
 
     await ffmpeg.run(
-      '-ss',
-      `${formatTime(originatorWordStart)}`,
       '-i',
       `${projectName}Audio.webm`,
-      '-t',
+      '-ss',
+      `${formatTime(originatorWordStart)}`,
+      '-to',
       `${formatTime(originatorWordEnd)}`,
       `${projectName}Word.webm`
-    );
-
-    await fs.promises.writeFile(
-      `${__dirname}/temp/text.webm`,
-      ffmpeg.FS('readFile', `${projectName}Word.webm`)
     );
 
     await ffmpeg.run(
@@ -192,8 +187,6 @@ export async function extractAudio(
       `${projectName}Audio.webm`,
       '-t',
       formatTime(start),
-      '-c',
-      'copy',
       `${projectName}1.webm`
     );
 
@@ -204,8 +197,6 @@ export async function extractAudio(
       `${projectName}Audio.webm`,
       '-t',
       formatTime(duration),
-      '-c',
-      'copy',
       `${projectName}2.webm`
     );
 
@@ -242,11 +233,11 @@ export function formatTime(seconds = 0) {
   const minutes = Math.floor((seconds % 3600) / 60)
     .toString()
     .padStart(2, '0');
-  const newSeconds = (seconds % 60).toFixed(1).toString().padStart(3, '0');
+  const newSeconds = (seconds % 60).toFixed(3).toString().padStart(6, '0');
   const hours = Math.floor(seconds / 3600)
     .toString()
     .padStart(2, '0');
   return `${hours || '00'}:${minutes || '00'}:${
-    newSeconds || seconds.toString().padStart(3, '0')
+    newSeconds || seconds.toString().padStart(6, '0')
   }`;
 }
