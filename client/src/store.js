@@ -7,6 +7,7 @@ import { createLoadingSlice } from './slices/loadingSlice';
 import { createMementoSlice } from './slices/mementoSlice';
 import { createTranscriptionSlice } from './slices/transcriptionSlice';
 import { createSnapshotSlice } from './slices/snapshotsSlice';
+import { createAudioMementoSlice } from './slices/audioMementoSlice';
 const useStore = create(
   persist(
     (set, get) => ({
@@ -17,6 +18,7 @@ const useStore = create(
       ...createMementoSlice(set, get),
       ...createTranscriptionSlice(set, get),
       ...createSnapshotSlice(set, get),
+      ...createAudioMementoSlice(set, get),
     }),
     {
       name: 'userInfo',

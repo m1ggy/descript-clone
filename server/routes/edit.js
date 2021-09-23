@@ -1,7 +1,15 @@
 import express from 'express';
-import { editAudio } from '../controllers/editController';
+import {
+  deleteEdits,
+  editAudio,
+  saveAudio,
+} from '../controllers/editController';
 const router = express.Router();
 
 router.post('/:id', ...editAudio);
+
+router.delete('/:id', deleteEdits);
+
+router.patch('/:id', saveAudio);
 
 export default router;

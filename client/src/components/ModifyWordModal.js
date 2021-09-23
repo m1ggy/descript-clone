@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 import useMemento from '../hooks/useMemento';
 import useEdit from '../hooks/useEdit';
 import EditAudioAndText from './EditAudioAndText';
@@ -33,19 +34,27 @@ function ModifyWordModal({
     setRerender((old) => !old);
   };
 
-  const handleEditAudioText = (e, newRecording) => {
+  const handleEditAudioText = async (e, newRecording) => {
     e.preventDefault();
-    editAudioAndText(
-      pIndex,
-      wIndex,
-      newWord,
-      useExisting,
-      newRecording,
-      duration,
-      word.startTime,
-      word.endTime
-    );
     setShow(false);
+    await toast.promise(
+      editAudioAndText(
+        pIndex,
+        wIndex,
+        newWord,
+        useExisting,
+        newRecording,
+        duration,
+        word.startTime,
+        word.endTime
+      ),
+      {
+        success: 'Edited Audio and Text',
+        pending: 'Editing audio....',
+        error: 'Failed to edit audio',
+      }
+    );
+
     setNewWord('');
     setRerender((old) => !old);
   };

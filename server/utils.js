@@ -158,5 +158,5 @@ export function formatTime(seconds) {
     .toString()
     .padStart(2, '0');
 
-  return `${hours}:${minutes}:${newSeconds}`;
+  return `${hours || '00'}:${minutes || '00'}:${newSeconds || seconds}`;
 }

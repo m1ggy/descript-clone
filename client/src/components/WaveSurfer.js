@@ -5,6 +5,7 @@ import ModifyWordModal from './ModifyWordModal';
 import './wavesurfer.css';
 import WSControls from './WSControls';
 import TranscriptionContainer from './TranscriptionContainer';
+import useStore from '../store';
 
 function WaveSurfer({ link, destroy }) {
   const [waveSurfer, setWaveSurfer] = useState(null);
@@ -22,6 +23,8 @@ function WaveSurfer({ link, destroy }) {
   const [show, setShow] = useState(false);
   const [duration, setDuration] = useState(0);
   const [rerender, setRerender] = useState(false);
+  const memento = useStore((state) => state.memento);
+  const audioMemento = useStore((state) => state.audioMemento);
 
   ///wave surfer
   useEffect(() => {
@@ -45,20 +48,40 @@ function WaveSurfer({ link, destroy }) {
 
   useEffect(() => {
     if (destroy && waveSurfer) {
-      delete waveSurfer.backend.buffer;
-      waveSurfer.unAll();
-      waveSurfer.destroy();
-      setPlayerReady(false);
+      waveSurfer.on('loading', () => {
+        delete waveSurfer.backend.buffer;
+        waveSurfer.unAll();
+        waveSurfer.destroy();
+        setPlayerReady(false);
+      });
+
+      waveSurfer.on('ready', () => {
+        delete waveSurfer.backend.buffer;
+        waveSurfer.unAll();
+        waveSurfer.destroy();
+        setPlayerReady(false);
+      });
     }
   }, [destroy, waveSurfer]);
 
   useEffect(() => {
-    if (waveSurfer && link) {
-      const [data] = link.filter((x) => x.type.includes('audio'));
+    if (waveSurfer && memento) {
+      let id = null;
+      memento.forEach((x) => {
+        id = x.editId;
+      });
 
-      data ? waveSurfer.load(data.url) : setPlayerReady(true);
+      if (id && audioMemento.length) {
+        const [audio] = audioMemento.filter((x) => x.id === id);
+
+        audio && waveSurfer.load(audio.url);
+      } else {
+        const [data] = link.filter((x) => x.type.includes('audio'));
+
+        data ? waveSurfer.load(data.url) : setPlayerReady(true);
+      }
     }
-  }, [waveSurfer, link]);
+  }, [waveSurfer, link, memento, audioMemento]);
 
   useEffect(() => {
     if (waveSurfer != null) {

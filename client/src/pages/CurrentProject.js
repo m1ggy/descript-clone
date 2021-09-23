@@ -24,6 +24,7 @@ import useStore from '../store';
 import useMemento from '../hooks/useMemento';
 import './currentProject.css';
 import useProject from '../hooks/useProject';
+import useEdit from '../hooks/useEdit';
 
 let mediaLength = 0;
 let mementoSelector = (state) => state.memento;
@@ -37,6 +38,7 @@ function CurrentProject() {
   const setCurrentProject = useStore((state) => state.setCurrentProject);
   const setTranscription = useStore((state) => state.setTranscription);
   const clearTranscription = useStore((state) => state.clearTranscription);
+  const setAudioMemento = useStore((state) => state.setAudioMemento);
 
   const [rawJson, setRawJson] = useState(null);
 
@@ -52,6 +54,8 @@ function CurrentProject() {
   const { saveTranscription } = useProject();
   const { flush, undo, redo, undoSnapshots, redoSnapshots, save } =
     useMemento();
+
+  const { flushEdits, saveAudio } = useEdit();
   const setMemento = useStore((state) => state.setMemento);
   const memento = useStore(mementoSelector);
   useEffect(() => {
@@ -111,6 +115,7 @@ function CurrentProject() {
       pending: 'Saving changes ...',
       error: 'Failed to save changes',
     });
+    await saveAudio();
     save();
     setSaving(false);
   };
@@ -139,12 +144,14 @@ function CurrentProject() {
         </Row>
         <Row style={{ borderBottom: '2px solid black', marginBottom: '10px' }}>
           <Button
-            onClick={() => {
+            onClick={async () => {
               history.goBack();
               setCurrentProject({});
               setDestroy(true);
               flush();
               clearTranscription();
+              setAudioMemento([]);
+              await flushEdits();
             }}
             style={{
               width: 'fit-content',
@@ -263,8 +270,25 @@ function CurrentProject() {
                   <div>
                     {rawJson ? (
                       <>
-                        <pre style={{ margin: 0, color: 'green' }}>
+                        <pre
+                          style={{
+                            margin: 0,
+                            color: 'green',
+                            width: 'fit-content',
+                          }}
+                        >
                           Transcribed <FaCheck />
+                        </pre>
+                        <pre
+                          style={{
+                            margin: 0,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            width: 'fit-content',
+                          }}
+                          onClick={transcribe}
+                        >
+                          rerun transcription <CgTranscript />
                         </pre>
                       </>
                     ) : mediaLength > 0 ? (

@@ -44,10 +44,14 @@ const useMemento = () => {
    * @param {Number} wIndex word index
    * @param {String} newWord new string to replace existing word
    */
-  function setNewMemento(pIndex, wIndex, newWord) {
+  function setNewMemento(pIndex, wIndex, newWord, id = null) {
     let temp = JSON.parse(JSON.stringify(memento));
 
     temp[pIndex].words[wIndex].word = newWord;
+
+    if (id) {
+      temp[pIndex].editId = id;
+    }
     let oldMemento = JSON.parse(JSON.stringify(memento));
     setUndo([...undoSnapshots, oldMemento]);
     setMemento(temp);
