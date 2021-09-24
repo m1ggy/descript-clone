@@ -37,12 +37,7 @@ const configWebm = {
   languageCode,
   audioChannelCount: 2,
   enableWordTimeOffsets: true,
-};
-
-const configMp3 = {
-  encoding: 'MP3',
-  languageCode,
-  enableWordTimeOffsets: true,
+  model: 'video',
 };
 
 export const getTranscription = async (req, res) => {
@@ -61,19 +56,11 @@ export const createTranscription = async (req, res) => {
     uri: `gs://${projectBucket.name}/${user}/${projectName}/${filename}`,
   };
   console.log(audio);
-  let request = null;
+  let request = {
+    audio,
+    config: configWebm,
+  };
 
-  if (filename.includes('webm')) {
-    request = {
-      audio,
-      config: configWebm,
-    };
-  } else if (filename.includes('mp3')) {
-    request = {
-      audio,
-      config: configMp3,
-    };
-  }
   try {
     console.log('starting transcription');
     const [operation] = await speechClient.longRunningRecognize(request);

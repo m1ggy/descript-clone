@@ -60,6 +60,7 @@ function CurrentProject() {
   const memento = useStore(mementoSelector);
 
   const loading = useStore((state) => state.loading);
+  const setLoading = useStore((state) => state.setLoading);
   useEffect(() => {
     if (currentProject) {
       if (currentProject.files) {
@@ -96,6 +97,7 @@ function CurrentProject() {
 
   const transcribe = async () => {
     setTranscribing(true);
+    setLoading(true);
     await toast.promise(
       createTranscription(
         currentProject.projectName,
@@ -108,10 +110,12 @@ function CurrentProject() {
       }
     );
     setTranscribing(false);
+    setLoading(false);
   };
 
   const saveTS = async (id) => {
     setSaving(true);
+    setLoading(true);
     await toast.promise(saveTranscription(id, memento), {
       success: 'Saved changes',
       pending: 'Saving changes ...',
@@ -120,15 +124,16 @@ function CurrentProject() {
     await saveAudio();
     save();
     setSaving(false);
+    setLoading(false);
   };
 
   const handleUndo = () => {
     undo();
-    toast.warn('Undo', { autoClose: 1000 });
+    toast.warn('Undo', { autoClose: 2000 });
   };
   const handleRedo = () => {
     redo();
-    toast.warn('Redo', { autoClose: 1000 });
+    toast.warn('Redo', { autoClose: 2000 });
   };
   return (
     <Row>

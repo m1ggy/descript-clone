@@ -112,7 +112,11 @@ function ModifyWordModal({
           {
             success: 'Added new word',
             pending: 'Adding new word',
-            error: 'Failed to add new word',
+            error: {
+              render({ data }) {
+                return `${data}`;
+              },
+            },
           }
         );
       } else {

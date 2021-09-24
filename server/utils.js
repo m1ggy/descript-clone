@@ -371,6 +371,7 @@ export async function deleteAudio(path, start, end, id) {
       `${id}.webm`,
       '-t',
       formatTime(start),
+
       `${id}1.webm`
     );
     await ffmpeg.run('-ss', formatTime(end), '-i', `${id}.webm`, `${id}2.webm`);

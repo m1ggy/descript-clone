@@ -50,22 +50,22 @@ function TranscriptionWord({
                 Edit Text <FiEdit3 />
               </pre>
             </li>
-            <li>
-              <pre
-                className='text-warning option-item'
-                onClick={() => {
-                  onSelectOption(
-                    'Replace Text and Audio',
-                    'replaceTextAudio',
-                    word,
-                    pIndex,
-                    wIndex
-                  );
-                }}
-              >
-                Replace Text and Audio <VscReplaceAll />
-              </pre>
-            </li>
+            {/* <li>
+                <pre
+                  className='text-warning option-item'
+                  onClick={() => {
+                    onSelectOption(
+                      'Replace Text and Audio',
+                      'replaceTextAudio',
+                      word,
+                      pIndex,
+                      wIndex
+                    );
+                  }}
+                >
+                  Replace Text and Audio <VscReplaceAll />
+                </pre>
+              </li> */}
             <li>
               <pre
                 className='text-success option-item'
