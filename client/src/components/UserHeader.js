@@ -5,6 +5,7 @@ import useStore from '../store';
 import useAuth from '../hooks/useAuth';
 function UserHeader() {
   const user = useStore((state) => state.username);
+  const loading = useStore((state) => state.loading);
   const { signout } = useAuth();
   const [show, setShow] = useState(false);
   return (
@@ -15,7 +16,9 @@ function UserHeader() {
       </Col>
       <Col lg={2} className='centered'>
         <Dropdown style={{ width: 'fit-content' }}>
-          <Dropdown.Toggle variant='primary'>Account</Dropdown.Toggle>
+          <Dropdown.Toggle variant='primary' disabled={loading}>
+            Account
+          </Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item onClick={() => setShow(true)}>Logout</Dropdown.Item>
           </Dropdown.Menu>

@@ -68,6 +68,16 @@ function TranscriptionWord({
             </li>
             <li>
               <pre
+                className='text-success option-item'
+                onClick={() => {
+                  onSelectOption('Add new Word', 'addNewWord', pIndex, wIndex);
+                }}
+              >
+                Add Word <VscReplaceAll />
+              </pre>
+            </li>
+            <li>
+              <pre
                 className='text-danger option-item'
                 onClick={() => {
                   onSelectOption(

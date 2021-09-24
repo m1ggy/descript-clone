@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import useMemento from '../hooks/useMemento';
 import useEdit from '../hooks/useEdit';
 import EditAudioAndText from './EditAudioAndText';
+import AddNewWord from './AddNewWord';
+import useStore from '../store';
 
 function ModifyWordModal({
   show = false,
@@ -18,25 +20,33 @@ function ModifyWordModal({
 }) {
   const [newWord, setNewWord] = useState('');
   const { setNewMemento } = useMemento();
-  const { editAudioAndText, editAudioWithExisting } = useEdit();
+  const { editAudioAndText, editAudioWithExisting, addNewWord } = useEdit();
   const [recording, setRecording] = useState(false);
   const [useExisting, setUseExisting] = useState(false);
+  const [recordingStarting, setRecordingStarting] = useState(false);
+  const setLoading = useStore((state) => state.setLoading);
 
   const onHide = () => {
+    setUseExisting(false);
+    setRecording(false);
     setShow(false);
+    setNewWord('');
   };
   const handleEdit = (e) => {
     e.preventDefault();
-
+    setLoading(true);
     setNewMemento(pIndex, wIndex, newWord);
     setShow(false);
     setNewWord('');
     setRerender((old) => !old);
+    setLoading(false);
   };
 
   const handleEditAudioText = async (e, newRecording) => {
     e.preventDefault();
+    setRecordingStarting(false);
     setShow(false);
+    setLoading(true);
     try {
       if (useExisting) {
         await toast.promise(
@@ -79,6 +89,35 @@ function ModifyWordModal({
     } catch {}
     setNewWord('');
     setRerender((old) => !old);
+    setLoading(false);
+  };
+
+  const handleAddNewWord = async (e, currentBlob = null, position) => {
+    e.preventDefault();
+    setRecordingStarting(false);
+    setShow(false);
+    setLoading(true);
+    try {
+      if (useExisting) {
+        await toast.promise(addNewWord(pIndex, wIndex, newWord, position), {
+          success: 'Added new word',
+          pending: 'Adding new word',
+          error: 'Failed to add new word',
+        });
+      } else {
+        await toast.promise(
+          addNewWord(pIndex, wIndex, newWord, position, currentBlob),
+          {
+            success: 'Added new word',
+            pending: 'Adding new word',
+            error: 'Failed to add new word',
+          }
+        );
+      }
+    } catch {}
+    setNewWord('');
+    setRerender((old) => !old);
+    setLoading(false);
   };
 
   return (
@@ -115,16 +154,30 @@ function ModifyWordModal({
             setRecording={setRecording}
             setUseExisting={setUseExisting}
             useExisting={useExisting}
+            setRecordingStarting={setRecordingStarting}
           />
         ) : type === 'deleteWord' ? (
           <>
             <p>Do you want to delete this word? the audio will be muted.</p>
             <Button>Confirm Delete</Button>
           </>
+        ) : type === 'addNewWord' ? (
+          <AddNewWord
+            setNewWord={setNewWord}
+            newWord={newWord}
+            setUseExisting={setUseExisting}
+            useExisting={useExisting}
+            setRecordingStarting={setRecordingStarting}
+            handleAddNewWord={handleAddNewWord}
+          />
         ) : null}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={onHide} disabled={recording} variant='outline-danger'>
+        <Button
+          onClick={onHide}
+          disabled={recording || recordingStarting}
+          variant='outline-danger'
+        >
           Cancel
         </Button>
       </Modal.Footer>

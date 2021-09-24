@@ -58,6 +58,8 @@ function CurrentProject() {
   const { flushEdits, saveAudio } = useEdit();
   const setMemento = useStore((state) => state.setMemento);
   const memento = useStore(mementoSelector);
+
+  const loading = useStore((state) => state.loading);
   useEffect(() => {
     if (currentProject) {
       if (currentProject.files) {
@@ -158,7 +160,7 @@ function CurrentProject() {
               marginLeft: '35px',
               marginBottom: '25px',
             }}
-            disabled={transcribing || saving}
+            disabled={transcribing || saving || loading}
           >
             Go back <FaArrowLeft size='1.5em' style={{ marginLeft: '3px' }} />
           </Button>
@@ -279,17 +281,20 @@ function CurrentProject() {
                         >
                           Transcribed <FaCheck />
                         </pre>
-                        <pre
-                          style={{
-                            margin: 0,
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                            width: 'fit-content',
-                          }}
-                          onClick={transcribe}
-                        >
-                          rerun transcription <CgTranscript />
-                        </pre>
+                        {!(undoSnapshots.length || redoSnapshots.length) &&
+                          !loading && (
+                            <pre
+                              style={{
+                                margin: 0,
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                width: 'fit-content',
+                              }}
+                              onClick={transcribe}
+                            >
+                              rerun transcription <CgTranscript />
+                            </pre>
+                          )}
                       </>
                     ) : mediaLength > 0 ? (
                       <>
@@ -357,7 +362,7 @@ function CurrentProject() {
                             // pointerEvents: 'none',
                           }}
                           onClick={() => saveTS(id, memento)}
-                          disabled={saving}
+                          disabled={saving || loading}
                         >
                           <>
                             Save{' '}
@@ -387,7 +392,11 @@ function CurrentProject() {
 
                             marginLeft: '10px ',
                           }}
-                          disabled={undoSnapshots.length ? false : true}
+                          disabled={
+                            (undoSnapshots.length ? false : true) ||
+                            loading ||
+                            saving
+                          }
                           onClick={handleUndo}
                         >
                           Undo{' '}
@@ -416,7 +425,11 @@ function CurrentProject() {
 
                             marginLeft: '10px ',
                           }}
-                          disabled={redoSnapshots.length ? false : true}
+                          disabled={
+                            (redoSnapshots.length ? false : true) ||
+                            saving ||
+                            loading
+                          }
                           onClick={handleRedo}
                         >
                           Redo
@@ -440,7 +453,7 @@ function CurrentProject() {
                           }}
                           size='sm'
                           variant='info'
-                          disabled={true}
+                          disabled={true || loading}
                         >
                           Export...{' '}
                           <FaFileExport

@@ -57,6 +57,12 @@ const useMemento = () => {
     setMemento(temp);
   }
 
+  function setNewMementoAddWord(temp) {
+    let oldMemento = JSON.parse(JSON.stringify(memento));
+    setUndo([...undoSnapshots, oldMemento]);
+    setMemento(temp);
+  }
+
   ///TODO: Save changes to GCS
 
   /**
@@ -85,6 +91,7 @@ const useMemento = () => {
     flush,
     undoSnapshots,
     redoSnapshots,
+    setNewMementoAddWord,
   };
 };
 

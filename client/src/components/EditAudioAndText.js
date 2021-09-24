@@ -11,6 +11,7 @@ function EditAudioAndText({
   setNewWord,
   useExisting,
   setUseExisting,
+  setRecordingStarting,
 }) {
   const {
     stopRecording,
@@ -32,20 +33,8 @@ function EditAudioAndText({
   });
 
   function limitRecording() {
-    // const startTime = parseFloat(
-    //   `${word.startTime.seconds && word.startTime.seconds}.${
-    //     word.startTime.nanos && word.startTime.nanos
-    //   }`
-    // );
-    // const endTime = parseFloat(
-    //   `${word.endTime.seconds && word.endTime.seconds}.${
-    //     word.endTime.nanos && word.endTime.nanos
-    //   }`
-    // );
-
-    // const duration = endTime - startTime;
-
     resetRecorder();
+    setRecordingStarting(true);
     startAudioRecording(3000, setRecordingFinished, setStartCountdown);
   }
 
