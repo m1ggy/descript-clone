@@ -26,6 +26,10 @@ function WaveSurfer({ link, destroy }) {
   const memento = useStore((state) => state.memento);
   const audioMemento = useStore((state) => state.audioMemento);
 
+  useEffect(() => {
+    console.log(selectedWord);
+  }, [selectedWord]);
+
   ///wave surfer
   useEffect(() => {
     setWaveSurfer(

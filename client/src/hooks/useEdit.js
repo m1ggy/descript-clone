@@ -4,6 +4,7 @@ import useMemento from './useMemento';
 import useStore from '../store';
 import { toast } from 'react-toastify';
 import { baseurl } from '../constants';
+import getBlobDuration from 'get-blob-duration';
 const useEdit = () => {
   const transcription = useStore((state) => state.transcription);
   const currentProject = useStore((state) => state.currentProject);
@@ -32,7 +33,6 @@ const useEdit = () => {
     let editedId = null;
 
     const editId = uuidv4();
-    setNewMemento(pIndex, wIndex, newWord, editId);
 
     memento.forEach((x) => {
       if (x.editId && audioMemento.length) {
@@ -79,7 +79,7 @@ const useEdit = () => {
           },
         }
       );
-
+      setNewMemento(pIndex, wIndex, newWord, editId);
       setAudioMemento([...audioMemento, data]);
 
       return new Promise((resolve) => resolve());
@@ -105,7 +105,6 @@ const useEdit = () => {
     let audio = null;
 
     const editId = uuidv4();
-    setNewMemento(pIndex, wIndex, newWord, editId);
 
     memento.forEach((x) => {
       if (x.editId && audioMemento.length) {
@@ -153,7 +152,7 @@ const useEdit = () => {
             },
           }
         );
-
+        setNewMemento(pIndex, wIndex, newWord, editId);
         setAudioMemento([...audioMemento, data]);
         return new Promise((resolve) => resolve());
       }
@@ -226,7 +225,8 @@ const useEdit = () => {
     wIndex,
     newWord,
     position,
-    newRecording = null
+    newRecording = null,
+    baseWord
   ) {
     const {
       files: { media },
@@ -237,7 +237,8 @@ const useEdit = () => {
     let audio = null;
     const editId = uuidv4();
     let wordObject = {};
-
+    let duration = null;
+    console.log('position:', position);
     const tempMemento = JSON.parse(JSON.stringify(memento));
 
     const insert = (arr, index, newItem) => [
@@ -248,6 +249,12 @@ const useEdit = () => {
       // part of the array after the specified index
       ...arr.slice(index),
     ];
+    if (newRecording) {
+      duration = await getBlobDuration(newRecording);
+
+      duration = duration.toFixed(9);
+      duration = parseFloat(duration);
+    }
 
     wordObject.word = newWord;
     wordObject.startTime = {
@@ -259,15 +266,48 @@ const useEdit = () => {
       nanos: 0,
     };
 
-    wordObject.editId = editedId;
+    const parsedtime = (memento) => {
+      const start = parseFloat(
+        `${(memento.startTime.seconds && memento.startTime.seconds) || '00'}.${
+          memento.startTime.nanos && memento.startTime.nanos
+        }`
+      );
+      const end = parseFloat(
+        `${(memento.endTime.seconds && memento.endTime.seconds) || '00'}.${
+          memento.endTime.nanos && memento.endTime.nanos
+        }`
+      );
 
-    if (position === 'l') {
-      insert(tempMemento[pIndex].words, wIndex, wordObject);
-    } else if (position === 'r') {
-      insert(tempMemento[pIndex].words, wIndex + 1, wordObject);
+      return { start, end };
+    };
+
+    const parsedTime = parsedtime(tempMemento[pIndex].words[wIndex]);
+
+    const addedStart = parsedTime.start + duration;
+    const addedEnd = parsedTime.end + duration;
+
+    const start = {
+      seconds: addedStart.toString().split('.')[0],
+      nanos: addedStart.toString().split('.')[1],
+    };
+    const end = {
+      seconds: addedEnd.toString().split('.')[0],
+      nanos: addedEnd.toString().split('.')[1],
+    };
+    if (position === 'left') {
+      wordObject.startTime = tempMemento[pIndex].words[wIndex].startTime;
+      wordObject.endTime = start;
+      const result = insert(tempMemento[pIndex].words, wIndex, wordObject);
+
+      tempMemento[pIndex].words = result;
+    } else if (position === 'right') {
+      wordObject.startTime = tempMemento[pIndex].words[wIndex].endTime;
+      wordObject.endTime = end;
+      const result = insert(tempMemento[pIndex].words, wIndex + 1, wordObject);
+      tempMemento[pIndex].words = result;
+      console.log('new word array:', result);
     }
-
-    setNewMementoAddWord(tempMemento);
+    tempMemento[pIndex].editId = editId;
 
     memento.forEach((x) => {
       if (x.editId && audioMemento.length) {
@@ -285,58 +325,111 @@ const useEdit = () => {
     });
 
     if (useEdited) {
-      [audio] = audioMemento.filter((x) => x.id.includes(`${editedId}`));
+      [audio] = JSON.parse(
+        JSON.stringify(audioMemento.filter((x) => x.id.includes(`${editedId}`)))
+      );
     } else {
-      [audio] = media.filter((x) => x.type.includes('audio'));
+      [audio] = JSON.parse(
+        JSON.stringify(media.filter((x) => x.type.includes('audio')))
+      );
     }
 
     if (options.length) {
       ////we use the first option only
       audio.originator = options[0];
-      audio.projectName = currentProject.projectName;
-      audio.editId = editId;
-      audio.position = position;
     }
+    audio.editId = editId;
+    audio.baseWord = baseWord;
+    audio.position = position;
+    audio.projectName = currentProject.projectName;
 
     try {
-      if (options.length) {
-        toast.warn('Found existing word, using existing audio...', {
-          autoClose: 2000,
-        });
-
-        const blob = new Blob([JSON.stringify(audio)], {
-          type: 'application/json',
-        });
-
-        const form = new FormData();
-
-        if (newRecording) {
-          form.append('media', newRecording, `${editedId}-media.webm`);
-        }
-        form.append('existingAudio', blob);
-
-        const { data } = await axios.post(
-          `${baseurl}/edit/${currentProject._id}/add`,
-          form,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+      if (options.length === false && newRecording == null)
+        return new Promise((resolve, reject) =>
+          reject('No Existing word found and no Audio Recording provided.')
         );
 
-        setAudioMemento([...audioMemento, data]);
-        return new Promise((resolve) => resolve());
-      }
+      console.log('config:', audio);
+      const blob = new Blob([JSON.stringify(audio)], {
+        type: 'application/json',
+      });
 
-      return new Promise((resolve, reject) =>
-        reject('Found no existing word.')
+      const form = new FormData();
+      if (newRecording) {
+        form.append('media', newRecording, `${editId}-media.webm`);
+      }
+      form.append('existingAudio', blob);
+
+      const { data } = await axios.post(
+        `${baseurl}/edit/${currentProject._id}/add`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-    } catch (e) {
-      return new Promise((resolve, reject) => reject(e));
+      setNewMementoAddWord(tempMemento);
+      setAudioMemento([...audioMemento, data]);
+      return new Promise((resolve) => resolve());
+    } catch {
+      return new Promise((resolve, reject) => reject());
     }
   }
-  function deleteAudioAndText() {}
+
+  async function deleteAudioAndText(pIndex, wIndex) {
+    const tempMemento = JSON.parse(JSON.stringify(memento));
+
+    const {
+      files: { media },
+    } = currentProject;
+    let editedId = null;
+    let audio = null;
+    let useEdited = false;
+    const editId = uuidv4();
+
+    memento.forEach((x) => {
+      if (x.editId && audioMemento.length) {
+        editedId = x.editId;
+        useEdited = true;
+      }
+    });
+    if (useEdited) {
+      [audio] = JSON.parse(
+        JSON.stringify(audioMemento.filter((x) => x.id.includes(`${editedId}`)))
+      );
+    } else {
+      [audio] = JSON.parse(
+        JSON.stringify(media.filter((x) => x.type.includes('audio')))
+      );
+    }
+
+    audio.projectName = currentProject.projectName;
+    audio.editId = editId;
+    audio.word = tempMemento[pIndex].words[wIndex];
+
+    try {
+      const { data } = await axios.post(
+        `${baseurl}/edit/${currentProject._id}/delete`,
+        { audio },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      tempMemento[pIndex].editId = editId;
+      tempMemento[pIndex].words.splice(wIndex, 1);
+
+      setMemento(tempMemento);
+      setAudioMemento([...audioMemento, data]);
+      return new Promise((resolve) => resolve());
+    } catch (e) {
+      console.log(e);
+      return new Promise((res, reject) => reject(e));
+    }
+  }
 
   return {
     editAudioAndText,

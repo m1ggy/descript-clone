@@ -34,10 +34,6 @@ function AddNewWord({
     if (preview.current && url) preview.current.src = url;
   });
 
-  useEffect(() => {
-    console.log(position);
-  }, [position]);
-
   function limitRecording() {
     setRecordingStarting(true);
     resetRecorder();
@@ -47,7 +43,7 @@ function AddNewWord({
   return (
     <Form
       onSubmit={(e) => {
-        handleAddNewWord(e, currentBlob);
+        handleAddNewWord(e, currentBlob, position);
       }}
     >
       <Form.Group>

@@ -12,15 +12,15 @@ function TranscriptionContainer({
 
   const startTimeFloat = (word) => {
     return parseFloat(
-      `${(word.startTime.seconds && word.startTime.seconds) || 0}.${
-        (word.startTime.nanos && word.startTime.nanos / 100000000) || 0
+      `${(word && word.startTime.seconds && word.startTime.seconds) || 0}.${
+        (word && word.startTime.nanos && word.startTime.nanos / 100000000) || 0
       }`
     );
   };
   const endTimeFloat = (word) => {
     return parseFloat(
-      `${(word.endTime.seconds && word.endTime.seconds) || 0}.${
-        (word.endTime.nanos && word.endTime.nanos / 100000000) || 0
+      `${(word && word.endTime.seconds && word.endTime.seconds) || 0}.${
+        (word && word.endTime.nanos && word.endTime.nanos / 100000000) || 0
       }`
     );
   };

@@ -2,6 +2,7 @@ import express from 'express';
 import {
   addNewWord,
   deleteEdits,
+  deleteWord,
   editAudio,
   editAudioWithExisting,
   saveAudio,
@@ -15,6 +16,8 @@ router.delete('/:id', deleteEdits);
 router.patch('/:id', saveAudio);
 
 router.post('/:id/existing', editAudioWithExisting);
-router.post(':id/add', ...addNewWord);
+router.post('/:id/add', ...addNewWord);
+
+router.post('/:id/delete', deleteWord);
 
 export default router;

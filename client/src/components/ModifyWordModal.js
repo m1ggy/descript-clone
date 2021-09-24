@@ -20,7 +20,12 @@ function ModifyWordModal({
 }) {
   const [newWord, setNewWord] = useState('');
   const { setNewMemento } = useMemento();
-  const { editAudioAndText, editAudioWithExisting, addNewWord } = useEdit();
+  const {
+    editAudioAndText,
+    editAudioWithExisting,
+    addNewWord,
+    deleteAudioAndText,
+  } = useEdit();
   const [recording, setRecording] = useState(false);
   const [useExisting, setUseExisting] = useState(false);
   const [recordingStarting, setRecordingStarting] = useState(false);
@@ -47,6 +52,7 @@ function ModifyWordModal({
     setRecordingStarting(false);
     setShow(false);
     setLoading(true);
+    setUseExisting(false);
     try {
       if (useExisting) {
         await toast.promise(
@@ -97,16 +103,21 @@ function ModifyWordModal({
     setRecordingStarting(false);
     setShow(false);
     setLoading(true);
+    setUseExisting(false);
     try {
       if (useExisting) {
-        await toast.promise(addNewWord(pIndex, wIndex, newWord, position), {
-          success: 'Added new word',
-          pending: 'Adding new word',
-          error: 'Failed to add new word',
-        });
+        console.log('indices:', pIndex, wIndex);
+        await toast.promise(
+          addNewWord(pIndex, wIndex, newWord, position, null, word),
+          {
+            success: 'Added new word',
+            pending: 'Adding new word',
+            error: 'Failed to add new word',
+          }
+        );
       } else {
         await toast.promise(
-          addNewWord(pIndex, wIndex, newWord, position, currentBlob),
+          addNewWord(pIndex, wIndex, newWord, position, currentBlob, word),
           {
             success: 'Added new word',
             pending: 'Adding new word',
@@ -114,10 +125,29 @@ function ModifyWordModal({
           }
         );
       }
-    } catch {}
+    } catch (e) {
+      console.log(e);
+    }
     setNewWord('');
     setRerender((old) => !old);
     setLoading(false);
+  };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    setShow(false);
+    setLoading(true);
+    try {
+      await toast.promise(deleteAudioAndText(pIndex, wIndex), {
+        pending: 'Deleting word ...',
+        success: 'Deleted word',
+        error: 'Failed to delete word',
+      });
+
+      setNewWord('');
+      setRerender((old) => !old);
+      setLoading(false);
+    } catch {}
   };
 
   return (
@@ -158,8 +188,13 @@ function ModifyWordModal({
           />
         ) : type === 'deleteWord' ? (
           <>
-            <p>Do you want to delete this word? the audio will be muted.</p>
-            <Button>Confirm Delete</Button>
+            <p>
+              Do you want to delete this word? the audio will be deleted as
+              well.
+            </p>
+            <Button onClick={handleDelete} variant='danger'>
+              Confirm Delete
+            </Button>
           </>
         ) : type === 'addNewWord' ? (
           <AddNewWord

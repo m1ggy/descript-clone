@@ -160,12 +160,6 @@ export async function extractAudio(
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
     const ffmpeg = createFFmpeg({ log: true });
 
-    console.log(formatTime(originatorWordStart));
-    console.log(formatTime(originatorWordEnd));
-    console.log(formatTime(start));
-    console.log(formatTime(end));
-    console.log(formatTime(duration));
-
     await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
@@ -195,8 +189,6 @@ export async function extractAudio(
       formatTime(end),
       '-i',
       `${projectName}Audio.webm`,
-      '-t',
-      formatTime(duration),
       `${projectName}2.webm`
     );
 
@@ -229,6 +221,187 @@ export async function extractAudio(
   }
 }
 
+export async function addNewAudioExtract(
+  path,
+  cut,
+  originatorWordStart,
+  originatorWordEnd,
+  projectName
+) {
+  try {
+    const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    await ffmpeg.load();
+
+    ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}Audio.webm`,
+      '-ss',
+      `${formatTime(originatorWordStart)}`,
+      '-to',
+      `${formatTime(originatorWordEnd)}`,
+      `${projectName}Word.webm`
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      `00:00:00`,
+      '-i',
+      `${projectName}Audio.webm`,
+      '-t',
+      formatTime(cut),
+      `${projectName}1.webm`
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      formatTime(cut),
+      '-i',
+      `${projectName}Audio.webm`,
+      `${projectName}2.webm`
+    );
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}1.webm`,
+      '-i',
+      `${projectName}Word.webm`,
+      '-i',
+      `${projectName}2.webm`,
+      '-filter_complex',
+      '[0:a][1:a][2:a]concat=n=3:v=0:a=1',
+      `${projectName}Output.webm`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${projectName}Output.webm`)
+    );
+
+    ffmpeg.FS('unlink', `${projectName}Output.webm`);
+    ffmpeg.FS('unlink', `${projectName}2.webm`);
+    ffmpeg.FS('unlink', `${projectName}1.webm`);
+    ffmpeg.FS('unlink', `${projectName}Word.webm`);
+
+    return outputPath;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
+export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
+  const ffmpeg = createFFmpeg({ log: true });
+
+  const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
+  try {
+    await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
+
+    await ffmpeg.load();
+
+    ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
+
+    ffmpeg.FS(
+      'writeFile',
+      `${projectName}Edit.webm`,
+      await fetchFile(newAudioPath)
+    );
+
+    await ffmpeg.run(
+      '-ss',
+      `00:00:00`,
+      '-i',
+      `${projectName}.webm`,
+      '-t',
+      formatTime(cut),
+      `${projectName}1.webm`
+    );
+    await ffmpeg.run(
+      '-ss',
+      formatTime(cut),
+      '-i',
+      `${projectName}.webm`,
+      `${projectName}2.webm`
+    );
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}1.webm`,
+      '-i',
+      `${projectName}Edit.webm`,
+      '-i',
+      `${projectName}2.webm`,
+      '-filter_complex',
+      '[0:0][1:0][2:0]concat=n=3:v=0:a=1[out]',
+      '-map',
+      '[out]',
+      `${projectName}Output.webm`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${projectName}Output.webm`)
+    );
+
+    ffmpeg.FS('unlink', `${projectName}Output.webm`);
+    ffmpeg.FS('unlink', `${projectName}2.webm`);
+    ffmpeg.FS('unlink', `${projectName}1.webm`);
+    ffmpeg.FS('unlink', `${projectName}Edit.webm`);
+    return outputPath;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
+export async function deleteAudio(path, start, end, id) {
+  const ffmpeg = createFFmpeg({ log: true });
+  const outputPath = `${__dirname}/temp/edit/${id}Output.webm`;
+
+  try {
+    await ffmpeg.load();
+    ffmpeg.FS('writeFile', `${id}.webm`, await fetchFile(path));
+    await ffmpeg.run(
+      '-ss',
+      `00:00:00`,
+      '-i',
+      `${id}.webm`,
+      '-t',
+      formatTime(start),
+      `${id}1.webm`
+    );
+    await ffmpeg.run('-ss', formatTime(end), '-i', `${id}.webm`, `${id}2.webm`);
+
+    await ffmpeg.run(
+      '-i',
+      `${id}1.webm`,
+      '-i',
+      `${id}2.webm`,
+      '-filter_complex',
+      '[0:0][1:0]concat=n=2:v=0:a=1[out]',
+      '-map',
+      '[out]',
+      `${id}Output.webm`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${id}Output.webm`)
+    );
+
+    ffmpeg.FS('unlink', `${id}Output.webm`);
+    ffmpeg.FS('unlink', `${id}2.webm`);
+    ffmpeg.FS('unlink', `${id}1.webm`);
+    return outputPath;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
 export function formatTime(seconds = 0) {
   const minutes = Math.floor((seconds % 3600) / 60)
     .toString()
@@ -240,4 +413,20 @@ export function formatTime(seconds = 0) {
   return `${hours || '00'}:${minutes || '00'}:${
     newSeconds || seconds.toString().padStart(6, '0')
   }`;
+}
+
+export function parseNewFloat(start, end) {
+  const newStart = parseFloat(
+    `${(start.startTime.seconds && start.startTime.seconds) || '00'}.${
+      start.startTime.nanos && start.startTime.nanos / 100000
+    }`
+  );
+
+  const newEnd = parseFloat(
+    `${(end.endTime.seconds && end.endTime.seconds) || '00'}.${
+      end.endTime.nanos && end.endTime.nanos / 100000
+    }`
+  );
+
+  return { start: newStart, end: newEnd };
 }

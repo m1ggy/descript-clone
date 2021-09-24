@@ -35,7 +35,7 @@ function TranscriptionWord({
 
   const popover = (
     <Popover style={{ width: '250px' }}>
-      <Popover.Header as='h3'>{word.word}</Popover.Header>
+      <Popover.Header as='h3'>{word && word.word}</Popover.Header>
       <Popover.Body>
         <div>
           <p style={{ margin: 0, fontWeight: 'bolder' }}>Modify</p>
@@ -70,7 +70,13 @@ function TranscriptionWord({
               <pre
                 className='text-success option-item'
                 onClick={() => {
-                  onSelectOption('Add new Word', 'addNewWord', pIndex, wIndex);
+                  onSelectOption(
+                    'Add new Word',
+                    'addNewWord',
+                    word,
+                    pIndex,
+                    wIndex
+                  );
                 }}
               >
                 Add Word <VscReplaceAll />
@@ -98,13 +104,13 @@ function TranscriptionWord({
         <div>
           <p style={{ margin: 0, fontWeight: 'bolder' }}>Duration</p>
           <small>
-            {word.startTime.seconds && word.startTime.seconds}.
-            {word.startTime.nanos && word.startTime.nanos / 100000000}s
+            {word && word.startTime.seconds && word.startTime.seconds}.
+            {word && word.startTime.nanos && word.startTime.nanos / 100000000}s
           </small>{' '}
           to{' '}
           <small>
-            {word.endTime.seconds && word.endTime.seconds}.
-            {word.endTime.nanos && word.endTime.nanos / 100000000}s
+            {word && word.endTime.seconds && word.endTime.seconds}.
+            {word && word.endTime.nanos && word.endTime.nanos / 100000000}s
           </small>
         </div>
       </Popover.Body>
@@ -113,62 +119,53 @@ function TranscriptionWord({
 
   return (
     <>
-      <OverlayTrigger
-        trigger='click'
-        placement='top'
-        overlay={popover}
-        rootClose
-        show={open}
-        onToggle={() => setOpen(false)}
-        popperConfig={{
-          modifiers: [
-            { name: 'applyStyles', fn: () => {}, phase: 'read', enabled: true },
-          ],
-        }}
-      >
-        <div
-          className={`word ${progress(word) && className}`}
-          style={{
-            cursor: 'pointer',
-            margin: 0,
-            padding: '5px',
-            display: 'inline-flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 'fit-content',
-            height: '40px',
-            backgroundColor: open
-              ? '#1f9bcf'
-              : null || progress(word)
-              ? '#b5e4c5'
-              : null,
-            color: open ? 'white' : 'black',
-          }}
-          onClick={() => {
-            setOpen(!open);
+      {word && (
+        <OverlayTrigger
+          trigger='click'
+          placement='top'
+          overlay={popover}
+          rootClose
+          show={open}
+          onToggle={() => setOpen(false)}
+          popperConfig={{
+            modifiers: [
+              {
+                name: 'applyStyles',
+                fn: () => {},
+                phase: 'read',
+                enabled: true,
+              },
+            ],
           }}
         >
-          <div style={{ maxHeight: '75%' }}>
-            <p style={{ userSelect: 'none' }}>{word.word}</p>
+          <div
+            className={`word ${progress(word) && className}`}
+            style={{
+              cursor: 'pointer',
+              margin: 0,
+              padding: '5px',
+              display: 'inline-flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 'fit-content',
+              height: '40px',
+              backgroundColor: open
+                ? '#1f9bcf'
+                : null || progress(word)
+                ? '#b5e4c5'
+                : null,
+              color: open ? 'white' : 'black',
+            }}
+            onClick={() => {
+              setOpen(!open);
+            }}
+          >
+            <div style={{ maxHeight: '75%' }}>
+              <p style={{ userSelect: 'none' }}>{word && word.word}</p>
+            </div>
           </div>
-          {/* <div>
-            {progress && (
-              <>
-                {' '}
-                <small>
-                  {word.startTime.seconds && word.startTime.seconds}.
-                  {word.startTime.nanos && word.startTime.nanos / 100000000}s
-                </small>{' '}
-                to{' '}
-                <small>
-                  {word.endTime.seconds && word.endTime.seconds}.
-                  {word.endTime.nanos && word.endTime.nanos / 100000000}s
-                </small>
-              </>
-            )}
-          </div> */}
-        </div>
-      </OverlayTrigger>
+        </OverlayTrigger>
+      )}
     </>
   );
 }
