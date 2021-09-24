@@ -268,4 +268,48 @@ const editAudioWithExisting = async (req, res) => {
   }
 };
 
-export { editAudio, deleteEdits, saveAudio, editAudioWithExisting };
+const addNewWord = [
+  upload.any(),
+  async (req, res) => {
+    const {
+      user: { user },
+      params: { id },
+      files,
+    } = req;
+
+    await fs.promises.mkdir(`${__dirname}/temp/edit/${id}`, {
+      recursive: true,
+    });
+    console.log(user, id, files);
+    try {
+      const startOriginator = parseFloat(
+        `${
+          (audio.originator.startTime.seconds &&
+            audio.originator.startTime.seconds) ||
+          '00'
+        }.${
+          audio.originator.startTime.nanos &&
+          audio.originator.startTime.nanos / 100000
+        }`
+      );
+
+      const endOriginator = parseFloat(
+        `${
+          (audio.originator.endTime.seconds &&
+            audio.originator.endTime.seconds) ||
+          '00'
+        }.${
+          audio.originator.endTime.nanos &&
+          audio.originator.endTime.nanos / 100000
+        }`
+      );
+
+      return res.status(200).json();
+    } catch (e) {
+      console.log(e);
+      return res.status(404).json(e);
+    }
+  },
+];
+
+export { editAudio, deleteEdits, saveAudio, editAudioWithExisting, addNewWord };

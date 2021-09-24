@@ -316,7 +316,7 @@ const useEdit = () => {
         form.append('existingAudio', blob);
 
         const { data } = await axios.post(
-          `${baseurl}/edit/${currentProject._id}/addWord`,
+          `${baseurl}/edit/${currentProject._id}/add`,
           form,
           {
             headers: {
