@@ -37,7 +37,7 @@ function ExportedProject() {
   }, [project, history, getJson]);
 
   return (
-    <Col className='wrapper'>
+    <Col className='exported-wrapper'>
       {project && (
         <>
           <Row>
@@ -56,10 +56,10 @@ function ExportedProject() {
             <video
               src={project.exportedUrl}
               controls
-              style={{ height: '10vw' }}
+              style={{ height: '20vw' }}
             />
           </Row>
-          <Row className='border'>
+          <Row>
             {json &&
               json.map((x, i) => {
                 return (
