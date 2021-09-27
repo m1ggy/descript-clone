@@ -168,7 +168,11 @@ function AddNewWord({
       >
         <Button
           type='submit'
-          disabled={recordingActive || (recordNew && !recordingFinished)}
+          disabled={
+            recordingActive ||
+            (recordNew && !recordingFinished) ||
+            (!useExisting && !recordNew)
+          }
           variant='outline-success'
         >
           Submit

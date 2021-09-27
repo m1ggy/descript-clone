@@ -36,6 +36,8 @@ export function authorize(req, res, next) {
   });
 }
 
+const ffmpeg = createFFmpeg({ log: true });
+
 /**
  * Converts video files to mp3
  * @param {String} pathToVideo path to video file
@@ -44,14 +46,14 @@ export function authorize(req, res, next) {
  * @returns {Promise}  a path String of the new mp3 file. default directory:__dirname/temp/converted/.mp3
  */
 export async function convertToMp3(pathToVideo, filename, newName) {
-  const ffmpeg = createFFmpeg();
   const newPath = `${__dirname}/temp/converted/${newName}Audio.webm`;
 
   try {
     await fs.promises.mkdir(`${__dirname}/temp/converted/`, {
       recursive: true,
     });
-    await ffmpeg.load();
+
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${filename}`, await fetchFile(pathToVideo));
 
@@ -84,13 +86,11 @@ export async function cutAudio(
   projectName,
   duration
 ) {
-  const ffmpeg = createFFmpeg({ log: true });
-
   const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
   try {
     await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
 
-    await ffmpeg.load();
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
 
@@ -158,9 +158,8 @@ export async function extractAudio(
 ) {
   try {
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
-    const ffmpeg = createFFmpeg({ log: true });
 
-    await ffmpeg.load();
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
 
@@ -230,9 +229,8 @@ export async function addNewAudioExtract(
 ) {
   try {
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
-    const ffmpeg = createFFmpeg({ log: true });
 
-    await ffmpeg.load();
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
 
@@ -294,13 +292,11 @@ export async function addNewAudioExtract(
 }
 
 export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
-  const ffmpeg = createFFmpeg({ log: true });
-
   const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
   try {
     await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
 
-    await ffmpeg.load();
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
 
@@ -358,11 +354,10 @@ export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
 }
 
 export async function deleteAudio(path, start, end, id) {
-  const ffmpeg = createFFmpeg({ log: true });
   const outputPath = `${__dirname}/temp/edit/${id}Output.webm`;
 
   try {
-    await ffmpeg.load();
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
     ffmpeg.FS('writeFile', `${id}.webm`, await fetchFile(path));
     await ffmpeg.run(
       '-ss',

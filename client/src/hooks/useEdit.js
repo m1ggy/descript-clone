@@ -241,6 +241,9 @@ const useEdit = () => {
     console.log('position:', position);
     const tempMemento = JSON.parse(JSON.stringify(memento));
 
+    if (!options.length && newRecording == null)
+      return new Promise((res, reject) => reject('No existing word found.'));
+
     const insert = (arr, index, newItem) => [
       // part of the array before the specified index
       ...arr.slice(0, index),
@@ -337,9 +340,6 @@ const useEdit = () => {
         JSON.stringify(media.filter((x) => x.type.includes('audio')))
       );
     }
-
-    if (!options.length && newRecording == null)
-      return new Promise((res, reject) => reject('No existing word found.'));
 
     if (options.length) {
       ////we use the first option only
