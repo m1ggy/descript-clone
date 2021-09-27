@@ -6,6 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import PrivateRoute from './routes/PrivateRoute';
 import Projects from './pages/Projects';
 import CurrentProject from './pages/CurrentProject';
+import ExportedProject from './pages/ExportedProject';
 import 'react-toastify/dist/ReactToastify.min.css';
 function App() {
   return (
@@ -29,6 +30,10 @@ function App() {
           <Route path='/' exact>
             <Login />
           </Route>
+          <PrivateRoute
+            component={ExportedProject}
+            path='/projects/:id/exported'
+          />
           <PrivateRoute component={CurrentProject} path='/projects/:id' />
           <PrivateRoute component={Projects} path='/projects' />
 

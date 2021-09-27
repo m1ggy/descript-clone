@@ -25,6 +25,7 @@ import useMemento from '../hooks/useMemento';
 import './currentProject.css';
 import useProject from '../hooks/useProject';
 import useEdit from '../hooks/useEdit';
+import ConfirmExportModal from '../components/ConfirmExportModal';
 
 let mediaLength = 0;
 let mementoSelector = (state) => state.memento;
@@ -33,7 +34,7 @@ function CurrentProject() {
   const { id } = useParams();
   const [selectedMedia, setSelectedMedia] = useState({});
   const [showMedia, setShowMedia] = useState(false);
-  // const [saving, setSaving] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const currentProject = useStore((state) => state.currentProject);
   const setCurrentProject = useStore((state) => state.setCurrentProject);
   const setTranscription = useStore((state) => state.setTranscription);
@@ -61,6 +62,13 @@ function CurrentProject() {
 
   const loading = useStore((state) => state.loading);
   const setLoading = useStore((state) => state.setLoading);
+
+  useEffect(() => {
+    setMemento([]);
+    setTranscription([]);
+    setLoading(false);
+    //eslint-disable-next-line
+  }, []);
   useEffect(() => {
     if (currentProject) {
       if (currentProject.files) {
@@ -145,6 +153,7 @@ function CurrentProject() {
           setShow={setShowMedia}
           id={currentProject._id}
         />
+        <ConfirmExportModal show={showExport} setShow={setShowExport} />
         <Row className='project-header'>
           <UserHeader />
           <h1>{currentProject.projectName}</h1>
@@ -458,7 +467,13 @@ function CurrentProject() {
                           }}
                           size='sm'
                           variant='info'
-                          disabled={true || loading}
+                          disabled={
+                            loading ||
+                            (undoSnapshots.length || redoSnapshots.length
+                              ? true
+                              : false)
+                          }
+                          onClick={() => setShowExport(true)}
                         >
                           Export...{' '}
                           <FaFileExport

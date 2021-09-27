@@ -10,6 +10,8 @@ const projectSchema = new mongoose.Schema(
     },
     owner: { type: String, required: true },
     transcribed: { type: Boolean, default: false },
+    exported: { type: Boolean, default: false },
+    exportedUrl: {},
   },
   { timestamps: true }
 );

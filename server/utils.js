@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import fs from 'fs';
-import path, { format } from 'path';
-
+import path from 'path';
+import axios from 'axios';
 const __dirname = path.resolve();
 
 /**
@@ -36,8 +36,6 @@ export function authorize(req, res, next) {
   });
 }
 
-const ffmpeg = createFFmpeg({ log: true });
-
 /**
  * Converts video files to mp3
  * @param {String} pathToVideo path to video file
@@ -46,14 +44,14 @@ const ffmpeg = createFFmpeg({ log: true });
  * @returns {Promise}  a path String of the new mp3 file. default directory:__dirname/temp/converted/.mp3
  */
 export async function convertToMp3(pathToVideo, filename, newName) {
+  const ffmpeg = createFFmpeg();
   const newPath = `${__dirname}/temp/converted/${newName}Audio.webm`;
 
   try {
     await fs.promises.mkdir(`${__dirname}/temp/converted/`, {
       recursive: true,
     });
-
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${filename}`, await fetchFile(pathToVideo));
 
@@ -86,11 +84,13 @@ export async function cutAudio(
   projectName,
   duration
 ) {
+  const ffmpeg = createFFmpeg({ log: true });
+
   const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
   try {
     await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
 
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
 
@@ -158,8 +158,9 @@ export async function extractAudio(
 ) {
   try {
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
+    const ffmpeg = createFFmpeg({ log: true });
 
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
 
@@ -229,8 +230,9 @@ export async function addNewAudioExtract(
 ) {
   try {
     const outputPath = `${__dirname}/temp/edit/${projectName}ExistingWordOutput.webm`;
+    const ffmpeg = createFFmpeg({ log: true });
 
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}Audio.webm`, await fetchFile(path));
 
@@ -292,11 +294,13 @@ export async function addNewAudioExtract(
 }
 
 export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
+  const ffmpeg = createFFmpeg({ log: true });
+
   const outputPath = `${__dirname}/temp/edit/${projectName}Output.webm`;
   try {
     await fs.promises.mkdir(`${__dirname}/temp/edit/`, { recursive: true });
 
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
 
     ffmpeg.FS('writeFile', `${projectName}.webm`, await fetchFile(path));
 
@@ -354,10 +358,11 @@ export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
 }
 
 export async function deleteAudio(path, start, end, id) {
+  const ffmpeg = createFFmpeg({ log: true });
   const outputPath = `${__dirname}/temp/edit/${id}Output.webm`;
 
   try {
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    await ffmpeg.load();
     ffmpeg.FS('writeFile', `${id}.webm`, await fetchFile(path));
     await ffmpeg.run(
       '-ss',
@@ -398,6 +403,54 @@ export async function deleteAudio(path, start, end, id) {
   }
 }
 
+export async function mergeVideoAndAudio(
+  videoPath,
+  audioPath,
+  projectName,
+  type
+) {
+  const ffmpeg = createFFmpeg({ log: true });
+  const outputPath = `${__dirname}/temp/export/${projectName}-export.webm`;
+  try {
+    await ffmpeg.load();
+    ffmpeg.FS(
+      'writeFile',
+      `${projectName}.${type}`,
+      await fetchFile(videoPath)
+    );
+    ffmpeg.FS(
+      'writeFile',
+      `${projectName}Audio.webm`,
+      await fetchFile(audioPath)
+    );
+
+    await ffmpeg.run(
+      '-i',
+      `${projectName}.${type}`,
+      '-i',
+      `${projectName}Audio.webm`,
+      `${projectName}-output.${type}`
+    );
+
+    await fs.promises.writeFile(
+      outputPath,
+      ffmpeg.FS('readFile', `${projectName}-output.${type}`)
+    );
+
+    ffmpeg.FS('unlink', `${projectName}.${type}`);
+    ffmpeg.FS('unlink', `${projectName}Audio.webm`);
+    ffmpeg.FS('unlink', `${projectName}-output.${type}`);
+
+    return new Promise((res) => res(outputPath));
+  } catch {
+    return false;
+  }
+}
+
+export function getType(type = '') {
+  return type.includes('webm') ? 'webm' : type.includes('mp4') ? 'mp4' : null;
+}
+
 export function formatTime(seconds = 0) {
   const minutes = Math.floor((seconds % 3600) / 60)
     .toString()
@@ -425,4 +478,34 @@ export function parseNewFloat(start, end) {
   );
 
   return { start: newStart, end: newEnd };
+}
+
+export async function downloadFile(fileUrl, outputLocationPath) {
+  const writer = fs.createWriteStream(outputLocationPath);
+
+  return axios({
+    method: 'get',
+    url: fileUrl,
+    responseType: 'stream',
+  }).then((response) => {
+    //ensure that the user can call `then()` only when the file has
+    //been downloaded entirely.
+
+    return new Promise((resolve, reject) => {
+      response.data.pipe(writer);
+      let error = null;
+      writer.on('error', (err) => {
+        error = err;
+        writer.close();
+        reject(err);
+      });
+      writer.on('close', () => {
+        if (!error) {
+          resolve(true);
+        }
+        //no need to call the reject here, as it will have been called in the
+        //'error' stream;
+      });
+    });
+  });
 }

@@ -13,6 +13,7 @@ const useEdit = () => {
   const memento = useStore((state) => state.memento);
   const setTranscription = useStore((state) => state.setTranscription);
   const setMemento = useStore((state) => state.setMemento);
+  const setLoading = useStore((state) => state.setLoading);
   const { setNewMementoAddWord } = useMemento();
   const token = localStorage.getItem('accessToken');
   // async function editAudioAndText(
@@ -177,6 +178,7 @@ const useEdit = () => {
       });
       return new Promise((resolve) => resolve());
     } catch {
+      setLoading(false);
       return new Promise((resolve, rejects) => rejects());
     }
   }
@@ -216,6 +218,7 @@ const useEdit = () => {
 
       return new Promise((resolve) => resolve());
     } catch {
+      setLoading(false);
       return new Promise((resolve, rejects) => rejects());
     }
   }
@@ -238,11 +241,7 @@ const useEdit = () => {
     const editId = uuidv4();
     let wordObject = {};
     let duration = null;
-    console.log('position:', position);
     const tempMemento = JSON.parse(JSON.stringify(memento));
-
-    if (!options.length && newRecording == null)
-      return new Promise((res, reject) => reject('No existing word found.'));
 
     const insert = (arr, index, newItem) => [
       // part of the array before the specified index
@@ -273,6 +272,9 @@ const useEdit = () => {
         }
       });
     });
+
+    if (!options.length && newRecording == null)
+      return new Promise((res, reject) => reject('No existing word found.'));
 
     const parsedtime = (memento) => {
       const start = parseFloat(
@@ -333,7 +335,7 @@ const useEdit = () => {
 
     if (useEdited) {
       [audio] = JSON.parse(
-        JSON.stringify(audioMemento.filter((x) => x.id.includes(`${editedId}`)))
+        JSON.stringify(audioMemento.filter((x) => x.id.includes(editedId)))
       );
     } else {
       [audio] = JSON.parse(
@@ -380,6 +382,7 @@ const useEdit = () => {
       setAudioMemento([...audioMemento, data]);
       return new Promise((resolve) => resolve());
     } catch {
+      setLoading(false);
       return new Promise((resolve, reject) => reject());
     }
   }
@@ -403,7 +406,7 @@ const useEdit = () => {
     });
     if (useEdited) {
       [audio] = JSON.parse(
-        JSON.stringify(audioMemento.filter((x) => x.id.includes(`${editedId}`)))
+        JSON.stringify(audioMemento.filter((x) => x.id.includes(editedId)))
       );
     } else {
       [audio] = JSON.parse(
@@ -432,9 +435,9 @@ const useEdit = () => {
       setNewMementoAddWord(tempMemento);
       setAudioMemento([...audioMemento, data]);
       return new Promise((resolve) => resolve());
-    } catch (e) {
-      console.log(e);
-      return new Promise((res, reject) => reject(e));
+    } catch {
+      setLoading(false);
+      return new Promise((res, reject) => reject('Failed to delete'));
     }
   }
 

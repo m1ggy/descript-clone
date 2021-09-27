@@ -516,3 +516,17 @@ export const CreateProjectWithMedia = [
     return res.status(200).json({ message: 'successfully create project' });
   },
 ];
+
+export const fetchExportedProject = async (req, res) => {
+  const {
+    params: { id },
+  } = req;
+  console.log(id);
+  const exportedProject = await projectModel.findById(id);
+
+  if (!exportedProject) return res.status(404).json();
+
+  if (!exportedProject.exported) return res.status(404).json();
+
+  return res.status(200).json({ project: exportedProject });
+};
