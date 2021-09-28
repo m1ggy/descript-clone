@@ -438,6 +438,14 @@ export async function mergeVideoAndAudio(
       `${projectName}.${type}`,
       '-i',
       `${projectName}Audio.webm`,
+      '-c:v',
+      'copy',
+      '-c:a',
+      'aac',
+      '-map',
+      '0:v:0',
+      '-map',
+      '1:a:0',
       `${projectName}-output.mp4`
     );
 
