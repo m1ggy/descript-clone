@@ -8,7 +8,7 @@ function ConfirmExportModal({ show, setShow }) {
   const handleExport = async () => {
     setShow(false);
     await toast.promise(exportProject(), {
-      success: 'exported project',
+      success: 'Exported project',
       pending: 'Exporting project. This might take a while.',
       error: 'Failed to export',
     });
