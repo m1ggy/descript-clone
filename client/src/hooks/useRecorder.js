@@ -53,9 +53,7 @@ const useRecorder = (
         captureStream = await navigator.mediaDevices.getDisplayMedia(
           screenOptions
         );
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     }
 
     if (captureStream && audioStream) {

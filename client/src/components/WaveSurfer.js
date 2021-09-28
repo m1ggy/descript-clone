@@ -26,10 +26,6 @@ function WaveSurfer({ link, destroy }) {
   const memento = useStore((state) => state.memento);
   const audioMemento = useStore((state) => state.audioMemento);
 
-  useEffect(() => {
-    console.log(selectedWord);
-  }, [selectedWord]);
-
   ///wave surfer
   useEffect(() => {
     setWaveSurfer(
@@ -76,7 +72,7 @@ function WaveSurfer({ link, destroy }) {
           id = x.editId;
         }
       });
-      console.log(id);
+
       if (id && audioMemento.length) {
         const [audio] = audioMemento.filter((x) => x.id.includes(`${id}`));
 

@@ -192,11 +192,9 @@ const useEdit = () => {
         editedId = x.editId;
       });
 
-      console.log(editedId);
-
       if (editedId) {
         const [audio] = audioMemento.filter((x) => x.id === editedId);
-        console.log(editedId);
+
         if (audio) {
           await axios.patch(
             `${baseurl}/edit/${currentProject._id}`,
@@ -299,7 +297,7 @@ const useEdit = () => {
     }
     const addedStart = parsedTime.start + duration;
     const addedEnd = parsedTime.end + duration;
-    console.log(addedStart, addedEnd);
+
     const start = {
       seconds: addedStart.toString().split('.')[0],
       nanos:
@@ -358,7 +356,6 @@ const useEdit = () => {
           reject('No Existing word found and no Audio Recording provided.')
         );
 
-      console.log('config:', audio);
       const blob = new Blob([JSON.stringify(audio)], {
         type: 'application/json',
       });

@@ -71,8 +71,7 @@ function CurrentProject() {
     setLoading(false);
 
     function fetchproject(id) {
-      fetchProject(id).catch((e) => {
-        console.log('error', e);
+      fetchProject(id).catch(() => {
         history.push('/404');
       });
     }
@@ -106,10 +105,6 @@ function CurrentProject() {
     }
     //eslint-disable-next-line
   }, [rawJson]);
-
-  useEffect(() => {
-    console.log(currentProject);
-  }, [currentProject]);
 
   const transcribe = useCallback(async () => {
     setTranscribing(true);

@@ -67,11 +67,7 @@ function ModifyWordModal({
           {
             pending: 'Editing audio....',
             success: 'Successfully edited audio',
-            error: {
-              render({ data }) {
-                return `${data}`;
-              },
-            },
+            error: 'Failed to edit audio',
           }
         );
       } else {
@@ -106,17 +102,12 @@ function ModifyWordModal({
     setUseExisting(false);
     try {
       if (useExisting) {
-        console.log('indices:', pIndex, wIndex);
         await toast.promise(
           addNewWord(pIndex, wIndex, newWord, position, null, word),
           {
             success: 'Added new word',
             pending: 'Adding new word',
-            error: {
-              render({ data }) {
-                return `${data}`;
-              },
-            },
+            error: 'Failed to add new word',
           }
         );
       } else {

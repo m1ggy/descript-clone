@@ -48,9 +48,7 @@ function RecordAudioModal({ show, setShow }) {
         pending: 'Uploading audio file and creating project...',
         error: 'Failed to create project.',
       });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
 
     try {
       await toast.promise(getProjects(), {
@@ -58,9 +56,7 @@ function RecordAudioModal({ show, setShow }) {
         pending: 'Fetching projects...',
         error: 'Failed to fetch projects.',
       });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     setShow(false);
     setLoading(false);
   }

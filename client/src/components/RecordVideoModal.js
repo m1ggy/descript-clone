@@ -60,9 +60,7 @@ function RecordVideoModal({ show, setShow }) {
         pending: 'Uploading and Converting Video File....',
         error: 'Failed to upload video file.',
       });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
 
     try {
       await toast.promise(getProjects(), {
@@ -70,9 +68,7 @@ function RecordVideoModal({ show, setShow }) {
         pending: 'fetching updated project list....',
         error: 'Failed to fetch project list.',
       });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
 
     resetRecorder();
     setRecording(false);

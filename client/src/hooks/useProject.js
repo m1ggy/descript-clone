@@ -104,7 +104,6 @@ function useProject() {
       fetchProject(id);
       return;
     } catch (e) {
-      console.log(e);
       return;
     }
   }
@@ -124,9 +123,7 @@ function useProject() {
       );
       fetchProject(id);
       return;
-    } catch (e) {
-      console.log(e.response);
-    }
+    } catch (e) {}
   }
 
   async function createProjectWithMedia(media) {
@@ -138,9 +135,7 @@ function useProject() {
           Authorization: `Bearer ${token}`,
         },
       });
-    } catch (e) {
-      console.log(e.response);
-    }
+    } catch (e) {}
   }
 
   return {
