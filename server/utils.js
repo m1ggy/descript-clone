@@ -18,7 +18,6 @@ if (isMainThread) {
   new Worker(__filename);
 } else {
   console.log('using worker thread');
-  console.log(isMainThread);
 }
 export function generateToken(user, options = {}) {
   return jwt.sign({ user }, process.env.JWT_SECRET, options);
@@ -78,9 +77,10 @@ export async function convertToMp3(pathToVideo, filename, newName) {
       newPath,
       ffmpeg.FS('readFile', `${newName}Audio.webm`)
     );
-
+    ffmpeg.exit();
     return newPath;
   } catch (e) {
+    ffmpeg.exit();
     return null;
   }
 }
@@ -149,8 +149,10 @@ export async function cutAudio(
     ffmpeg.FS('unlink', `${projectName}2.webm`);
     ffmpeg.FS('unlink', `${projectName}1.webm`);
     ffmpeg.FS('unlink', `${projectName}Edit.webm`);
+    ffmpeg.exit();
     return outputPath;
   } catch (e) {
+    ffmpeg.exit();
     console.log(e);
     return false;
   }
@@ -222,9 +224,10 @@ export async function extractAudio(
     ffmpeg.FS('unlink', `${projectName}2.webm`);
     ffmpeg.FS('unlink', `${projectName}1.webm`);
     ffmpeg.FS('unlink', `${projectName}Word.webm`);
-
+    ffmpeg.exit();
     return outputPath;
   } catch (e) {
+    ffmpeg.exit();
     console.log(e);
     return false;
   }
@@ -294,9 +297,10 @@ export async function addNewAudioExtract(
     ffmpeg.FS('unlink', `${projectName}2.webm`);
     ffmpeg.FS('unlink', `${projectName}1.webm`);
     ffmpeg.FS('unlink', `${projectName}Word.webm`);
-
+    ffmpeg.exit();
     return outputPath;
   } catch (e) {
+    ffmpeg.exit();
     console.log(e);
     return false;
   }
@@ -407,8 +411,10 @@ export async function deleteAudio(path, start, end, id) {
     ffmpeg.FS('unlink', `${id}Output.webm`);
     ffmpeg.FS('unlink', `${id}2.webm`);
     ffmpeg.FS('unlink', `${id}1.webm`);
+    ffmpeg.exit();
     return outputPath;
   } catch (e) {
+    ffmpeg.exit();
     console.log(e);
     return false;
   }
@@ -451,9 +457,10 @@ export async function mergeVideoAndAudio(
     ffmpeg.FS('unlink', `${projectName}.${type}`);
     ffmpeg.FS('unlink', `${projectName}Audio.webm`);
     ffmpeg.FS('unlink', `${projectName}-output.${type}`);
-
+    ffmpeg.exit();
     return new Promise((res) => res(outputPath));
   } catch {
+    ffmpeg.exit();
     return false;
   }
 }
