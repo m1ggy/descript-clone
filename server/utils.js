@@ -2,15 +2,24 @@ import jwt from 'jsonwebtoken';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import axios from 'axios';
+import { Worker, isMainThread } from 'worker_threads';
 const __dirname = path.resolve();
-
+const __filename = fileURLToPath(import.meta.url);
 /**
  * creates a new jwt token
  * @param {string} user data to be encrypted
  * @param {object} options options arguments for jwt
  * @returns new jwt token string
  */
+
+if (isMainThread) {
+  new Worker(__filename);
+} else {
+  console.log('using worker thread');
+  console.log(isMainThread);
+}
 export function generateToken(user, options = {}) {
   return jwt.sign({ user }, process.env.JWT_SECRET, options);
 }
@@ -350,8 +359,10 @@ export async function AddNewAudioCut(path, newAudioPath, cut, projectName) {
     ffmpeg.FS('unlink', `${projectName}2.webm`);
     ffmpeg.FS('unlink', `${projectName}1.webm`);
     ffmpeg.FS('unlink', `${projectName}Edit.webm`);
+    ffmpeg.exit();
     return outputPath;
   } catch (e) {
+    ffmpeg.exit();
     console.log(e);
     return false;
   }

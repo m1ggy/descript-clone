@@ -14,7 +14,7 @@ function ExportedProject() {
     const getProject = async (id) => {
       setLoading(true);
       const data = await getExportedProject(id);
-
+      document.title = data.projectName;
       setProject(data);
       setLoading(false);
     };
@@ -71,7 +71,6 @@ function ExportedProject() {
                 maxHeight: '500px',
                 maxWidth: '750px',
               }}
-              className='border'
             />
           </Row>
           <Row

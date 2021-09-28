@@ -86,6 +86,7 @@ function CurrentProject() {
   useEffect(() => {
     if (currentProject == null) return;
 
+    document.title = `${currentProject.projectName} --Descript Clone`;
     if (currentProject.files) {
       if (currentProject.files.json !== {}) {
         setRawJson(currentProject.files.json);
