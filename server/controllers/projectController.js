@@ -387,7 +387,7 @@ export const CreateProjectWithMedia = [
       body: { projectName },
       file,
     } = req;
-
+    req.setTimeout(6000 * 1000);
     ///create local temp directory
 
     console.log(file);

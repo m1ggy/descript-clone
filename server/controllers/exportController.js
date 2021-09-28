@@ -67,7 +67,7 @@ export const exportProject = async (req, res) => {
 
       if (!outputPath)
         return res.status(404).json('Cannot merge audio and video files');
-      destination = `${user}/${currentProject.projectName}/export/${currentProject.projectName}EXPORT.${type}`;
+      destination = `${user}/${currentProject.projectName}/export/${currentProject.projectName}EXPORT.mp4`;
       await storage.upload(outputPath, {
         destination,
         metadata: {
@@ -76,9 +76,7 @@ export const exportProject = async (req, res) => {
       });
     } else if (videoPath) {
       console.log('video');
-      destination = `${user}/${currentProject.projectName}/export/${
-        currentProject.projectName
-      }EXPORT.${getType(video.type)}`;
+      destination = `${user}/${currentProject.projectName}/export/${currentProject.projectName}EXPORT.mp4`;
 
       await storage.upload(videoPath, {
         destination,

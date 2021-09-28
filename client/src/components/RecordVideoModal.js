@@ -11,7 +11,7 @@ import TimeElapsed from './TimeElapsed';
 import ProjectNameForm from './ProjectNameForm';
 
 function RecordVideoModal({ show, setShow }) {
-  const [options, setOptions] = useState({ audio: false, video: true });
+  const [options, setOptions] = useState({ audio: true, video: true });
   const [recording, setRecording] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [proceed, setProceed] = useState(false);
@@ -217,6 +217,7 @@ function RecordVideoModal({ show, setShow }) {
                           </OverlayToolTip>
                         </Form.Label>
                         <Form.Check
+                          defaultChecked
                           inline
                           value={options.audio}
                           onChange={(e) => {
