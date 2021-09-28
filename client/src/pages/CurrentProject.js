@@ -26,6 +26,7 @@ import './currentProject.css';
 import useProject from '../hooks/useProject';
 import useEdit from '../hooks/useEdit';
 import ConfirmExportModal from '../components/ConfirmExportModal';
+import { useBeforeunload } from 'react-beforeunload';
 
 let mediaLength = 0;
 let mementoSelector = (state) => state.memento;
@@ -42,12 +43,9 @@ function CurrentProject() {
   const setAudioMemento = useStore((state) => state.setAudioMemento);
 
   const [rawJson, setRawJson] = useState(null);
-
   const [transcribing, setTranscribing] = useState(false);
   const [saving, setSaving] = useState(false);
-
   const [destroy, setDestroy] = useState(false);
-
   const [files, setFiles] = useState([]);
   const [transcriptionLoading, setTranscriptionLoading] = useState(false);
 
@@ -55,15 +53,21 @@ function CurrentProject() {
   const { saveTranscription } = useProject();
   const { flush, undo, redo, undoSnapshots, redoSnapshots, save } =
     useMemento();
-
   const { fetchProject } = useProject();
-
   const { flushEdits, saveAudio } = useEdit();
+
   const setMemento = useStore((state) => state.setMemento);
   const memento = useStore(mementoSelector);
-
   const loading = useStore((state) => state.loading);
   const setLoading = useStore((state) => state.setLoading);
+
+  useBeforeunload((e) => {
+    if (saving || loading) {
+      e.preventDefault();
+    } else if (undoSnapshots.length || redoSnapshots.length) {
+      e.preventDefault();
+    }
+  });
 
   useEffect(() => {
     setMemento([]);

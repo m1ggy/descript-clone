@@ -1,11 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FaFileAudio, FaFileVideo } from 'react-icons/fa';
 import { Spinner } from 'react-bootstrap';
 import useProject from '../hooks/useProject';
 import { toast } from 'react-toastify';
+import useStore from '../store';
 export function DropZone({ id, ...props }) {
-  const [loading, setLoading] = useState(false);
+  const loading = useStore((state) => state.loading);
+  const setLoading = useStore((state) => state.setLoading);
   const { uploadMediaProject } = useProject();
   const onDrop = useCallback(
     async (acceptedFiles) => {
