@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '../store';
 import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
@@ -24,6 +24,7 @@ function Projects() {
   const { deleteProject, getProjects } = useProject();
 
   document.title = `${user}'s Projects --Descript Clone`;
+
   return (
     <>
       <Row className='wrapper'>

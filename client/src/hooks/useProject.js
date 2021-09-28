@@ -51,7 +51,13 @@ function useProject() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProject(res.data.projects);
+      let projects = res.data.projects.sort(function (a, b) {
+        var c = new Date(a.createdAt);
+        var d = new Date(b.createdAt);
+        return d - c;
+      });
+
+      setProject(projects);
       return res.data.message;
     } catch (e) {
       return e.response;

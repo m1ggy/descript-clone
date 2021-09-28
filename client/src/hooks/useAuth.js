@@ -15,8 +15,12 @@ function useAuth() {
       });
       if (res.status === 200) {
         const { token, projects, uid } = res.data;
-
-        setUser({ username, projects, globalTime: '', uid });
+        let sortedProjects = projects.sort(function (a, b) {
+          var c = new Date(a.createdAt);
+          var d = new Date(b.createdAt);
+          return d - c;
+        });
+        setUser({ username, projects: sortedProjects, uid });
         localStorage.setItem('accessToken', token);
         history.push('/projects');
       }
