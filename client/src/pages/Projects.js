@@ -21,7 +21,7 @@ function Projects() {
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
   const history = useHistory();
-  const { deleteProject, getProjects, fetchProject } = useProject();
+  const { deleteProject, getProjects } = useProject();
 
   document.title = `${user}'s Projects --Descript Clone`;
   return (
@@ -93,7 +93,6 @@ function Projects() {
                               <Button
                                 variant='success'
                                 onClick={async () => {
-                                  await fetchProject(x.id);
                                   history.push(`/projects/${x.id}`);
                                 }}
                               >

@@ -164,13 +164,25 @@ export const deleteProject = async (req, res) => {
 };
 ////fetch project
 export const getProject = async (req, res) => {
-  const { id } = req.params;
+  const {
+    params: { id },
+    user: { user },
+  } = req;
 
   try {
     const project = await projectModel.findById(id).exec();
+    const currentUser = await userModel.findOne({ username: user }).exec();
+
+    if (!currentUser)
+      return res.status(404).json({ message: 'User does not exist' });
 
     if (!project)
       return res.status(404).json({ message: 'Project does not exist' });
+
+    console.log(currentUser.username, project.owner);
+
+    if (currentUser.username !== project.owner)
+      return res.status(404).json({ message: 'user and owner does not exist' });
 
     return res.status(200).json({ message: 'project fetched', project });
   } catch (e) {

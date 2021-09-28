@@ -28,7 +28,7 @@ const useTranscription = () => {
       return new Promise((resolve) => {
         resolve();
       });
-    } catch (e) {
+    } catch {
       return new Promise((reject) => {
         reject();
       });

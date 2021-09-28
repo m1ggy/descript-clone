@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import useExport from '../hooks/useExport';
 import { Col, Row, Button, Spinner } from 'react-bootstrap';
@@ -14,11 +14,11 @@ function ExportedProject() {
     const getProject = async (id) => {
       setLoading(true);
       const data = await getExportedProject(id);
-      console.log(data);
+
       setProject(data);
       setLoading(false);
     };
-    console.log(id);
+
     getProject(id);
     //eslint-disable-next-line
   }, [id]);
@@ -32,9 +32,9 @@ function ExportedProject() {
 
       setJson(json);
     }
-
     if (project) downloadJson();
-  }, [project, history, getJson]);
+    //eslint-disable-next-line
+  }, [project]);
 
   return (
     <Col className='exported-wrapper'>
@@ -52,14 +52,32 @@ function ExportedProject() {
             <h4>{project.owner}</h4>
             <pre>{new Date(project.createdAt).toLocaleString('en-US')}</pre>
           </Row>
+          <Row style={{ marginBottom: '15px' }}>
+            <Button
+              variant='outline-success'
+              href={project.exportedUrl}
+              download=''
+            >
+              Download
+            </Button>
+          </Row>
           <Row>
             <video
               src={project.exportedUrl}
               controls
-              style={{ height: '20vw' }}
+              style={{
+                width: '50vw',
+                minWidth: '325px',
+                maxHeight: '500px',
+                maxWidth: '750px',
+              }}
+              className='border'
             />
           </Row>
-          <Row>
+          <Row
+            style={{ minWidth: '325px', maxWidth: '50vw', marginTop: '50px' }}
+            className='border'
+          >
             {json &&
               json.map((x, i) => {
                 return (
@@ -67,8 +85,27 @@ function ExportedProject() {
                     style={{
                       padding: 0,
                     }}
+                    key={i}
+                    className='border'
                   >
                     <div style={{ height: '25px' }} />
+                    {x.alternatives &&
+                      x.alternatives[0].words &&
+                      x.alternatives[0].words.map((z, i) => {
+                        return (
+                          <div
+                            key={i}
+                            style={{
+                              display: 'inline-flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              width: 'fit-content',
+                            }}
+                          >
+                            {z.word}&nbsp;
+                          </div>
+                        );
+                      })}
                     {x.words &&
                       x.words.map((z, i) => {
                         return (

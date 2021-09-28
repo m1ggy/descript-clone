@@ -67,9 +67,9 @@ function useProject() {
         },
       });
       setCurrentProject(res.data.project);
-      return res.data.message;
+      return new Promise((res) => res());
     } catch (e) {
-      return e.response;
+      return new Promise((res, rej) => rej(e));
     }
   }
 

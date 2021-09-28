@@ -111,5 +111,6 @@ export const createTranscription = async (req, res) => {
       .json({ message: 'create transcription post', id: currentProject._id });
   } catch (e) {
     console.log(e);
+    return res.status(404).json();
   }
 };

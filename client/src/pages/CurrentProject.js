@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Col, Row, Button, ListGroup, Spinner } from 'react-bootstrap';
 import { useHistory, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -56,6 +56,8 @@ function CurrentProject() {
   const { flush, undo, redo, undoSnapshots, redoSnapshots, save } =
     useMemento();
 
+  const { fetchProject } = useProject();
+
   const { flushEdits, saveAudio } = useEdit();
   const setMemento = useStore((state) => state.setMemento);
   const memento = useStore(mementoSelector);
@@ -67,17 +69,26 @@ function CurrentProject() {
     setMemento([]);
     setTranscription([]);
     setLoading(false);
+
+    function fetchproject(id) {
+      fetchProject(id).catch((e) => {
+        console.log('error', e);
+        history.push('/404');
+      });
+    }
+
+    fetchproject(id);
     //eslint-disable-next-line
   }, []);
   useEffect(() => {
-    if (currentProject) {
-      if (currentProject.files) {
-        if (currentProject.files.json !== {}) {
-          setRawJson(currentProject.files.json);
-        }
-        mediaLength = currentProject.files.media.length;
-        setFiles(currentProject.files.media);
+    if (currentProject == null) return;
+
+    if (currentProject.files) {
+      if (currentProject.files.json !== {}) {
+        setRawJson(currentProject.files.json);
       }
+      mediaLength = currentProject.files.media.length;
+      setFiles(currentProject.files.media);
     }
   }, [currentProject]);
 
@@ -97,20 +108,18 @@ function CurrentProject() {
   }, [rawJson]);
 
   useEffect(() => {
-    if (currentProject) {
-      if (currentProject.files) setFiles(currentProject.files.media);
-    }
-    //eslint-disable-next-line
-  }, []);
+    console.log(currentProject);
+  }, [currentProject]);
 
-  const transcribe = async () => {
+  const transcribe = useCallback(async () => {
     setTranscribing(true);
     setLoading(true);
+    const file = currentProject.files.media.filter((x) => {
+      return x.type.includes('audio');
+    })[0];
+
     await toast.promise(
-      createTranscription(
-        currentProject.projectName,
-        files.filter((x) => x.type.includes('audio'))[0].name
-      ),
+      createTranscription(currentProject.projectName, file.name),
       {
         success: 'Created Transcription',
         error: 'Failed to create transcription',
@@ -119,7 +128,7 @@ function CurrentProject() {
     );
     setTranscribing(false);
     setLoading(false);
-  };
+  }, [createTranscription, currentProject, setLoading]);
 
   const saveTS = async (id) => {
     setSaving(true);
@@ -143,6 +152,7 @@ function CurrentProject() {
     redo();
     toast.warn('Redo', { autoClose: 2000 });
   };
+
   return (
     <Row>
       <Col lg={2} xs={0}></Col>
@@ -283,6 +293,20 @@ function CurrentProject() {
                     flexDirection: 'column',
                   }}
                 >
+                  {currentProject.exported ? (
+                    <pre
+                      style={{
+                        margin: 0,
+                        textDecoration: 'underline',
+                        width: 'fit-content',
+                        cursor: 'pointer',
+                      }}
+                      className='text-info'
+                      onClick={() => history.push(`/projects/${id}/exported`)}
+                    >
+                      View Exported <FaFileExport />
+                    </pre>
+                  ) : null}
                   <div>
                     {rawJson ? (
                       <>
@@ -451,6 +475,7 @@ function CurrentProject() {
                         </Button>
                       </span>
                     </OverlayToolTip>
+
                     <OverlayToolTip
                       content={
                         <div style={{ margin: '5px' }}>

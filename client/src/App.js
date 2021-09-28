@@ -7,6 +7,7 @@ import PrivateRoute from './routes/PrivateRoute';
 import Projects from './pages/Projects';
 import CurrentProject from './pages/CurrentProject';
 import ExportedProject from './pages/ExportedProject';
+import NotFound from './pages/NotFound';
 import 'react-toastify/dist/ReactToastify.min.css';
 function App() {
   return (
@@ -30,15 +31,15 @@ function App() {
           <Route path='/' exact>
             <Login />
           </Route>
-          <PrivateRoute
-            component={ExportedProject}
-            path='/projects/:id/exported'
-          />
+
+          <Route path='/projects/:id/exported'>
+            <ExportedProject />
+          </Route>
           <PrivateRoute component={CurrentProject} path='/projects/:id' />
           <PrivateRoute component={Projects} path='/projects' />
 
           <Route path='*'>
-            <h1>Page not Found.</h1>
+            <NotFound />
           </Route>
         </Switch>
       </Router>
