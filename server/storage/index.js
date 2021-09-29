@@ -21,4 +21,18 @@ const gc = new Storage({
 });
 const projectBucket = gc.bucket('project-files-dc');
 
+export async function configureCors(bucket) {
+  await bucket.setCorsConfiguration({
+    origin: ['*'],
+    responseHeader: [
+      'X-Requested-With',
+      'Access-Control-Allow-Origin',
+      'Content-Type',
+    ],
+    method: ['GET', 'HEAD', 'DELETE', 'OPTIONS'],
+  });
+}
+
+configureCors(projectBucket);
+
 export default projectBucket;

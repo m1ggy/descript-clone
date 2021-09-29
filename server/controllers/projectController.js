@@ -19,7 +19,7 @@ const projectBucket = gc.bucket('project-files-dc');
 async function configureBucket() {
   await projectBucket.setCorsConfiguration([
     {
-      origin: ['http://localhost:3000'],
+      origin: ['*'],
       responseHeader: [
         'X-Requested-With',
         'Access-Control-Allow-Origin',

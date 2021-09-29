@@ -3,6 +3,7 @@ import { Storage } from '@google-cloud/storage';
 import fs from 'fs';
 import path from 'path';
 import projectModel from '../models/project';
+import { configureCors } from '../storage';
 
 const __dirname = path.resolve();
 ///create local temp dir if it does not exist
@@ -22,6 +23,8 @@ const gc = new Storage({
   projectId: 'descript-clone',
 });
 const projectBucket = gc.bucket('project-files-dc');
+
+configureCors(projectBucket);
 
 ///speech to text
 const speechClient = new speech.SpeechClient({
