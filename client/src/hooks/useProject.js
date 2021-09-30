@@ -19,9 +19,9 @@ function useProject() {
         }
       );
 
-      return res.data.message;
+      return new Promise((resolve) => resolve(res.data.message));
     } catch (e) {
-      return e.response.message;
+      return new Promise((res, rej) => rej(e));
     }
   }
 
@@ -37,9 +37,9 @@ function useProject() {
         },
       });
 
-      return res.data.message;
+      return new Promise((resolve) => resolve(res.data.message));
     } catch (e) {
-      return e.response.message;
+      return new Promise((res, rej) => rej(e));
     }
   }
 
@@ -82,7 +82,7 @@ function useProject() {
   async function deleteMediaProject(id, filename, converted = false) {
     const token = localStorage.getItem('accessToken');
     try {
-      const res = await axios.delete(`${baseurl}/project/${id}/media`, {
+      await axios.delete(`${baseurl}/project/${id}/media`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -92,9 +92,9 @@ function useProject() {
         },
       });
       fetchProject(id);
-      return res.data.message;
+      return new Promise((res) => res());
     } catch (e) {
-      return e.response;
+      return new Promise((res, rej) => rej());
     }
   }
 
@@ -141,7 +141,11 @@ function useProject() {
           Authorization: `Bearer ${token}`,
         },
       });
-    } catch (e) {}
+
+      return new Promise((res) => res());
+    } catch {
+      return new Promise((res, rej) => rej());
+    }
   }
 
   return {

@@ -21,6 +21,9 @@ function Projects() {
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
   const setLoading = useStore((state) => state.setLoading);
+  const setMemento = useStore((state) => state.setMemento);
+  const setTranscription = useStore((state) => state.setTranscription);
+  const setCurrentProject = useStore((state) => state.setCurrentProject);
   const history = useHistory();
   const { deleteProject, getProjects } = useProject();
 
@@ -28,6 +31,9 @@ function Projects() {
 
   useEffect(() => {
     getProjects();
+    setMemento([]);
+    setCurrentProject({});
+    setTranscription([]);
     setLoading(false);
 
     //eslint-disable-next-line
