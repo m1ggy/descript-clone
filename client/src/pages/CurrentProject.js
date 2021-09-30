@@ -74,10 +74,14 @@ function CurrentProject() {
     setTranscription([]);
     setLoading(false);
 
-    function fetchproject(id) {
-      fetchProject(id).catch(() => {
+    async function fetchproject(id) {
+      setLoading(true);
+      try {
+        await fetchProject(id);
+      } catch {
         history.push('/404');
-      });
+      }
+      setLoading(false);
     }
 
     fetchproject(id);
@@ -86,8 +90,8 @@ function CurrentProject() {
   useEffect(() => {
     if (currentProject == null) return;
 
-    document.title = `${currentProject.projectName} --Descript Clone`;
     if (currentProject.files) {
+      document.title = `${currentProject.projectName} --Descript Clone`;
       if (currentProject.files.json !== {}) {
         setRawJson(currentProject.files.json);
       }

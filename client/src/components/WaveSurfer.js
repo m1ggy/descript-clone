@@ -76,7 +76,12 @@ function WaveSurfer({ link, destroy }) {
       if (id && audioMemento.length) {
         const [audio] = audioMemento.filter((x) => x.id.includes(`${id}`));
 
-        audio && waveSurfer.load(audio.url);
+        if (!audio) {
+          const [data] = link.filter((x) => x.type.includes('audio'));
+          data ? waveSurfer.load(data.url) : setPlayerReady(true);
+        } else {
+          audio && waveSurfer.load(audio.url);
+        }
       } else {
         const [data] = link.filter((x) => x.type.includes('audio'));
 

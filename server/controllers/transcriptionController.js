@@ -1,9 +1,9 @@
 import speech from '@google-cloud/speech';
-import { Storage } from '@google-cloud/storage';
+
 import fs from 'fs';
 import path from 'path';
 import projectModel from '../models/project';
-import { configureCors } from '../storage';
+import projectBucket from '../storage';
 
 const __dirname = path.resolve();
 ///create local temp dir if it does not exist
@@ -16,15 +16,6 @@ async function makeTempDir() {
 }
 
 makeTempDir();
-
-///storage
-const gc = new Storage({
-  keyFilename: `../descript-clone-d821ff774d24.json`,
-  projectId: 'descript-clone',
-});
-const projectBucket = gc.bucket('project-files-dc');
-
-configureCors(projectBucket);
 
 ///speech to text
 const speechClient = new speech.SpeechClient({
@@ -52,7 +43,7 @@ export const createTranscription = async (req, res) => {
     user: { user },
     body: { projectName, filename },
   } = req;
-
+  req.setTimeout(6000 * 1000);
   console.log(user, projectName, filename);
 
   let audio = {

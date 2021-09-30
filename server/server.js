@@ -31,6 +31,11 @@ mongoose.connect(process.env.DB_URI, (error) => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  ///set timeout to longer duration
+  app.use((req, res, next) => {
+    req.setTimeout(6000 * 1000);
+    next();
+  });
   //routes
   app.use(authRoutes);
   app.use('/project', authorize, projectRoutes);

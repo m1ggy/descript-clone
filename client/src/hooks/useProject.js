@@ -108,9 +108,9 @@ function useProject() {
         },
       });
       fetchProject(id);
-      return;
+      return new Promise((res) => res());
     } catch (e) {
-      return;
+      return new Promise((res, rej) => rej());
     }
   }
 

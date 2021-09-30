@@ -22,22 +22,23 @@ export function DropZone({ id, ...props }) {
 
       const media = new FormData();
       media.append('media', acceptedFiles[0]);
-      toast
-        .promise(uploadMediaProject(id, media), {
+      try {
+        await toast.promise(uploadMediaProject(id, media), {
           pending: 'Uploading File ...',
           success: 'File upload successful.',
-          rejection: 'Failed to upload file.',
-        })
-        .then(() => {
-          setLoading(false);
+          error: 'Failed to upload file.',
         });
+        setLoading(false);
+      } catch {
+        setLoading(false);
+      }
     },
     [id, setLoading, uploadMediaProject]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: 'audio/webm, video/mp4',
+    accept: 'audio/webm, video/mp4, video/webm',
     maxFiles: 1,
   });
 
@@ -52,7 +53,7 @@ export function DropZone({ id, ...props }) {
           height: '100%',
         }}
       >
-        Uploading ....
+        loading ....
         <Spinner size='sm' variant='primary' animation='border' />
       </div>
     );

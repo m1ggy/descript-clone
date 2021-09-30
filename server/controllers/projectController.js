@@ -1,43 +1,13 @@
 import path from 'path';
-import { Storage } from '@google-cloud/storage';
+
 import multer from 'multer';
 import fs from 'fs';
 import projectModel from '../models/project.js';
 import userModel from '../models/user.js';
 import { convertToMp3 } from '../utils.js';
+import projectBucket from '../storage/index.js';
 
 const __dirname = path.resolve();
-
-///storage
-const gc = new Storage({
-  keyFilename: `../descript-clone-d821ff774d24.json`,
-  projectId: 'descript-clone',
-});
-const projectBucket = gc.bucket('project-files-dc');
-
-////storage cors and public access config
-async function configureBucket() {
-  await projectBucket.setCorsConfiguration([
-    {
-      origin: ['*'],
-      responseHeader: [
-        'X-Requested-With',
-        'Access-Control-Allow-Origin',
-        'Content-Type',
-      ],
-      method: ['GET', 'HEAD', 'DELETE', 'OPTIONS'],
-    },
-  ]);
-
-  async function createTempDir() {
-    await fs.promises.mkdir(`${__dirname}/temp/`, { recursive: true });
-  }
-
-  createTempDir();
-
-  await projectBucket.makePublic();
-}
-configureBucket().catch(console.error);
 
 ///multer
 const upload = multer({ dest: `${__dirname}/temp` });

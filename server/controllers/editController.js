@@ -1,4 +1,4 @@
-import { Storage } from '@google-cloud/storage';
+import projectBucket from '../storage/index';
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
@@ -11,7 +11,7 @@ import {
   extractAudio,
   parseNewFloat,
 } from '../utils';
-import { configureCors } from '../storage';
+
 const __dirname = path.resolve();
 ///create local temp dir if it does not exist
 
@@ -25,14 +25,6 @@ async function makeTempDir() {
 
 makeTempDir();
 
-///storage
-const gc = new Storage({
-  keyFilename: `../descript-clone-d821ff774d24.json`,
-  projectId: 'descript-clone',
-});
-const projectBucket = gc.bucket('project-files-dc');
-
-configureCors(projectBucket);
 ///multer
 const upload = multer({ dest: `${__dirname}/temp/edit` });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '../store';
 import { Dropdown, Col, Row, Button, Table } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
@@ -20,10 +20,18 @@ function Projects() {
   const [showAudioCreate, setShowAudioCreate] = useState(false);
   const user = useStore((state) => state.username);
   const projects = useStore((state) => state.projects);
+  const setLoading = useStore((state) => state.setLoading);
   const history = useHistory();
   const { deleteProject, getProjects } = useProject();
 
   document.title = `${user}'s Projects --Descript Clone`;
+
+  useEffect(() => {
+    getProjects();
+    setLoading(false);
+
+    //eslint-disable-next-line
+  }, []);
 
   return (
     <>

@@ -9,7 +9,10 @@ import CurrentProject from './pages/CurrentProject';
 import ExportedProject from './pages/ExportedProject';
 import NotFound from './pages/NotFound';
 import 'react-toastify/dist/ReactToastify.min.css';
+import useStore from './store';
+import { Spinner } from 'react-bootstrap';
 function App() {
+  const loading = useStore((state) => state.loading);
   return (
     <>
       <ToastContainer
@@ -23,6 +26,7 @@ function App() {
         draggable
         pauseOnHover
       />
+
       <Router>
         <Switch>
           <Route path='/signup'>
@@ -43,6 +47,16 @@ function App() {
           </Route>
         </Switch>
       </Router>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {' '}
+        {loading && <Spinner animation='grow' variant='success' />}
+      </div>
     </>
   );
 }
